@@ -32,7 +32,7 @@ const ThemeEvents = {
  * 
  * @class StickyCartBar
  */
-export default class StickyCartBar {
+class StickyCartBar {
   /**
    * @type {HTMLElement | null} The sticky cart container element
    */
@@ -460,3 +460,16 @@ export default class StickyCartBar {
     console.log('StickyCartBar: Destroyed');
   }
 }
+
+// Export as both ES6 module and window global for compatibility
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = StickyCartBar;
+}
+
+// Make available as window global
+if (typeof window !== 'undefined') {
+  window.StickyCartBar = StickyCartBar;
+}
+
+// Export as ES6 module default
+export default StickyCartBar;

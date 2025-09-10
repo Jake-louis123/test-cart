@@ -165,8 +165,10 @@
 <script>
   // Initialize sticky cart bar when DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
-    // Import and initialize the sticky cart bar
-    import('./assets/sticky-cart-bar.js').then(({ default: StickyCartBar }) => {
+    // Try to import the sticky cart bar module
+    const moduleUrl = '{{ 'sticky-cart-bar.js' | asset_url }}';
+    
+    import(moduleUrl).then(({ default: StickyCartBar }) => {
       const stickyCart = new StickyCartBar(
         document.getElementById('sticky-cart-bar-{{ section.id }}'),
         {
@@ -186,8 +188,25 @@
       });
     }).catch(error => {
       console.error('Failed to load sticky cart bar:', error);
+      
+      // Fallback: Try to load from window global if module import fails
+      if (window.StickyCartBar) {
+        const stickyCart = new window.StickyCartBar(
+          document.getElementById('sticky-cart-bar-{{ section.id }}'),
+          {
+            mainButtonSelector: '{{ main_button_selector }}',
+            sectionId: '{{ section.id }}',
+            productId: {{ product.id | json }},
+            showQuantity: {{ show_quantity | json }}
+          }
+        );
+        window.stickyCartBar = stickyCart;
+      } else {
+        console.warn('StickyCartBar not available. Module import failed and no global fallback found.');
+      }
     });
   });
+</script>
 </script>
 
 {%- endif -%}
