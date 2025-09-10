@@ -1,0 +1,268 @@
+{%- doc -%}
+  Renders a sticky cart bar that appears when the main add to cart button is out of view.
+  
+  Features:
+  - Shows variant selector and add to cart button
+  - Syncs bidirectionally with main product form  
+  - Responsive design with horizontal layout
+  - Configurable through theme editor
+  
+  Usage:
+  Add this section to product pages through theme.json or theme customizer
+  
+  @param {Object} product - The product object
+  @param {String} section.id - The section ID
+  @param {Object} section.settings - Section settings from schema
+{%- enddoc -%}
+
+{%- liquid
+  # Only render on product pages with valid product
+  unless template contains 'product' and product
+    echo '<!-- Sticky cart bar: Not a product page or no product available -->'
+    break
+  endunless
+
+  # Section settings with defaults
+  assign show_variant_selector = section.settings.show_variant_selector | default: true
+  assign show_quantity = section.settings.show_quantity | default: false  
+  assign button_text = section.settings.button_text | default: 'Add to cart'
+  assign main_button_selector = section.settings.main_button_selector | default: 'form[action*="/cart/add"] [type="submit"]'
+  assign show_product_info = section.settings.show_product_info | default: true
+  assign enable_sticky_cart = section.settings.enable_sticky_cart | default: true
+
+  # Product form ID for this section
+  assign product_form_id = 'StickyCartBar-ProductForm-' | append: section.id
+  
+  # Get current variant or first available variant
+  assign current_variant = product.selected_or_first_available_variant
+  assign variant_available = true
+  if current_variant.available == false
+    assign variant_available = false
+  endif
+-%}
+
+{%- if enable_sticky_cart -%}
+<div class="sticky-cart" 
+     id="sticky-cart-bar-{{ section.id }}"
+     data-main-button-selector="{{ main_button_selector }}"
+     data-section-id="{{ section.id }}"
+     data-product-id="{{ product.id }}"
+     hidden>
+  <div class="sticky-cart__inner">
+    {%- if show_product_info -%}
+      <div class="sticky-cart__product-info">
+        <span class="sticky-cart__product-title">{{ product.title }}</span>
+        {%- if current_variant.price -%}
+          <span class="sticky-cart__price">
+            {{ current_variant.price | money }}
+            {%- if current_variant.compare_at_price > current_variant.price -%}
+              <s class="sticky-cart__compare-price">{{ current_variant.compare_at_price | money }}</s>
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <product-form-component
+      class="sticky-cart__form-container"
+      data-section-id="{{ section.id }}"
+      data-product-id="{{ product.id }}"
+      data-product-url="{{ product.url }}"
+      data-quantity-default="1">
+      
+      <form action="{{ routes.cart_add_url }}" 
+            method="post" 
+            enctype="multipart/form-data" 
+            novalidate="novalidate" 
+            class="sticky-cart__form"
+            id="{{ product_form_id }}">
+        
+        {%- comment -%} Hidden variant ID input {%- endcomment -%}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" ref="variantId">
+        
+        {%- if show_variant_selector and product.has_only_default_variant == false -%}
+          <div class="sticky-cart__variant-selector">
+            {%- for option in product.options_with_values -%}
+              {%- assign option_index = forloop.index0 -%}
+              <div class="sticky-cart__option">
+                <label class="sticky-cart__label" for="sticky-option-{{ section.id }}-{{ option_index }}">
+                  {{ option.name }}:
+                </label>
+                <select name="options[{{ option.name | escape }}]" 
+                        id="sticky-option-{{ section.id }}-{{ option_index }}"
+                        class="sticky-cart__select"
+                        data-option-index="{{ option_index }}">
+                  {%- for value in option.values -%}
+                    {%- assign variant_for_value = product.variants | where: option.name, value | first -%}
+                    <option value="{{ value | escape }}" 
+                            {% if option.selected_value == value %}selected="selected"{% endif %}
+                            {% if variant_for_value %}data-variant-id="{{ variant_for_value.id }}"{% endif %}>
+                      {{ value }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- if show_quantity -%}
+          <div class="sticky-cart__quantity">
+            <label class="sticky-cart__label" for="sticky-quantity-{{ section.id }}">
+              {{ 'products.product.quantity.label' | t }}:
+            </label>
+            <input type="number" 
+                   id="sticky-quantity-{{ section.id }}"
+                   class="sticky-cart__quantity-input" 
+                   name="quantity" 
+                   value="1" 
+                   min="1">
+          </div>
+        {%- else -%}
+          <input type="hidden" name="quantity" value="1">
+        {%- endif -%}
+
+        <button type="submit" 
+                name="add" 
+                class="sticky-cart__button"
+                {% unless variant_available %}disabled{% endunless %}
+                ref="addToCartButtonContainer">
+          <span class="sticky-cart__button-text">
+            {%- if variant_available -%}
+              {{ button_text }}
+            {%- else -%}
+              {{ 'products.product.sold_out' | t }}
+            {%- endif -%}
+          </span>
+        </button>
+      </form>
+
+      <div class="visually-hidden" 
+           aria-live="assertive" 
+           role="status" 
+           aria-atomic="true" 
+           ref="liveRegion">
+      </div>
+    </product-form-component>
+  </div>
+</div>
+
+{%- comment -%} Include variant picker component for sync functionality {%- endcomment -%}
+<variant-picker
+  class="sticky-cart__variant-picker visually-hidden"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-product-url="{{ product.url }}"
+  data-template-product-match="true">
+  
+  {%- comment -%} JSON data for variant management {%- endcomment -%}
+  <script type="application/json">
+    {{ current_variant | json }}
+  </script>
+</variant-picker>
+
+{%- comment -%} JavaScript initialization {%- endcomment -%}
+<script>
+  // Initialize sticky cart bar when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Import and initialize the sticky cart bar
+    import('./assets/sticky-cart-bar.js').then(({ default: StickyCartBar }) => {
+      const stickyCart = new StickyCartBar(
+        document.getElementById('sticky-cart-bar-{{ section.id }}'),
+        {
+          mainButtonSelector: '{{ main_button_selector }}',
+          sectionId: '{{ section.id }}',
+          productId: {{ product.id | json }},
+          showQuantity: {{ show_quantity | json }}
+        }
+      );
+      
+      // Store reference for cleanup
+      window.stickyCartBar = stickyCart;
+      
+      // Clean up on page unload
+      window.addEventListener('beforeunload', () => {
+        stickyCart.destroy();
+      });
+    }).catch(error => {
+      console.error('Failed to load sticky cart bar:', error);
+    });
+  });
+</script>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sticky Cart Bar",
+  "class": "section section--sticky-cart-bar",
+  "tag": "section", 
+  "templates": ["product"],
+  "settings": [
+    {
+      "type": "header",
+      "content": "General Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_cart",
+      "label": "Enable sticky cart bar",
+      "default": true,
+      "info": "Shows the cart bar when main add to cart button is not visible"
+    },
+    {
+      "type": "text",
+      "id": "button_text", 
+      "label": "Add to cart button text",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "main_button_selector",
+      "label": "Main button CSS selector",
+      "default": "form[action*=\"/cart/add\"] [type=\"submit\"]",
+      "info": "CSS selector for the main add to cart button to detect visibility"
+    },
+    {
+      "type": "header",
+      "content": "Display Options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_variant_selector",
+      "label": "Show variant selector", 
+      "default": true,
+      "info": "Display variant options in sticky bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity",
+      "label": "Show quantity selector",
+      "default": false,
+      "info": "Display quantity input in sticky bar"  
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_info",
+      "label": "Show product information",
+      "default": true,
+      "info": "Display product title and price in sticky bar"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky Cart Bar"
+    }
+  ]
+}
+{% endschema %}
