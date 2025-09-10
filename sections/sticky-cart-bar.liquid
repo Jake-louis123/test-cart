@@ -24,6 +24,9 @@
   data-section-id="{{ section.id }}"
   data-main-atc-selector="{{ section.settings.main_atc_selector | default: 'form[action*=\'/cart/add\'] [type=\'submit\']' }}"
   style="--sticky-cart-z-index: {{ section.settings.z_index | default: 1000 }};"
+  role="region"
+  aria-label="Sticky cart bar for {{ product.title }}"
+  aria-live="polite"
 >
   <div class="sticky-cart-bar__container color-{{ section.settings.color_scheme }}">
     <div class="sticky-cart-bar__content">
@@ -63,6 +66,7 @@
         >
           <form action="{{ routes.cart_add_url }}" method="post" enctype="multipart/form-data" class="form">
             <input type="hidden" name="id" ref="variantId" value="{{ current_variant.id }}">
+            <input type="hidden" name="product-id" value="{{ product.id }}">
             
             <div class="sticky-cart-bar__controls">
               {% unless product.has_only_default_variant %}
@@ -199,6 +203,17 @@
     border-top: 1px solid rgba(var(--color-foreground-rgb) / 0.2);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     padding: var(--padding-sm) 0;
+  }
+
+  /* Color scheme support */
+  .sticky-cart-bar__container.color-scheme-1 {
+    --color-background: var(--color-base-background-1);
+    --color-foreground-rgb: var(--color-base-text-1-rgb);
+  }
+
+  .sticky-cart-bar__container.color-scheme-2 {
+    --color-background: var(--color-base-background-2);
+    --color-foreground-rgb: var(--color-base-text-2-rgb);
   }
 
   .sticky-cart-bar__content {
@@ -383,6 +398,27 @@
     justify-content: center;
     gap: 6px;
     white-space: nowrap;
+    transition: all 0.3s ease;
+  }
+
+  .sticky-add-to-cart-button.animate-success {
+    animation: cart-success 0.6s ease-in-out;
+  }
+
+  .sticky-add-to-cart-button.animate-error {
+    animation: cart-error 0.6s ease-in-out;
+  }
+
+  @keyframes cart-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes cart-error {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
   }
 
   /* Mobile responsive adjustments */
@@ -547,29 +583,59 @@ class StickyCartBar extends HTMLElement {
 
   bindEvents() {
     // Listen for variant updates using the theme's existing event system
-    const productSection = document.querySelector(`[data-product-id="${this.dataset.productId}"]`);
+    const productSection = document.querySelector('.product-information') || 
+                          document.querySelector(`[data-product-id="${this.dataset.productId}"]`);
+    
     if (productSection) {
-      productSection.addEventListener('theme:variant:update', (event) => {
+      // Listen for the theme's variant update events using the same event types as the theme
+      productSection.addEventListener('variantupdate', (event) => {
         this.handleVariantUpdate(event);
       });
       
-      productSection.addEventListener('theme:variant:selected', (event) => {
+      productSection.addEventListener('variantselected', (event) => {
         this.handleVariantSelected(event);
       });
     }
+
+    // Also listen globally for cart events
+    window.addEventListener('cartadd', this.handleCartAdd.bind(this));
+    window.addEventListener('carterror', this.handleCartError.bind(this));
   }
 
   handleVariantUpdate(event) {
-    if (event.detail.data?.productId !== this.dataset.productId) return;
+    if (event.detail?.data?.productId !== this.dataset.productId) return;
     
     const variantResource = event.detail.resource;
     this.updateVariantId(variantResource?.id);
     this.updateButtonState(variantResource);
+    this.updatePriceDisplay(variantResource);
   }
 
   handleVariantSelected(event) {
     // Handle immediate variant selection before the update event
-    this.updateSelectedVariant(event.detail.id);
+    this.updateSelectedVariant(event.detail?.id);
+  }
+
+  handleCartAdd(event) {
+    // Animate the sticky button when item is added to cart
+    const button = this.querySelector('.sticky-add-to-cart-button');
+    if (button) {
+      button.classList.add('animate-success');
+      setTimeout(() => {
+        button.classList.remove('animate-success');
+      }, 2000);
+    }
+  }
+
+  handleCartError(event) {
+    // Handle cart errors by shaking the button or showing an error state
+    const button = this.querySelector('.sticky-add-to-cart-button');
+    if (button) {
+      button.classList.add('animate-error');
+      setTimeout(() => {
+        button.classList.remove('animate-error');
+      }, 600);
+    }
   }
 
   updateVariantId(variantId) {
@@ -601,6 +667,38 @@ class StickyCartBar extends HTMLElement {
       } else if (targetElement.tagName === 'OPTION') {
         targetElement.selected = true;
         targetElement.parentElement.value = targetElement.value;
+      }
+    }
+  }
+
+  updatePriceDisplay(variant) {
+    const priceElement = this.querySelector('.sticky-cart-bar__price');
+    if (!priceElement || !variant) return;
+
+    const priceSpan = priceElement.querySelector('.price');
+    if (priceSpan) {
+      // Format price using Shopify's money filter (simplified)
+      const price = (variant.price / 100).toFixed(2);
+      priceSpan.textContent = `$${price}`;
+      
+      // Handle compare at price
+      const compareSpan = priceElement.querySelector('.price__compare');
+      if (variant.compare_at_price && variant.compare_at_price > variant.price) {
+        const comparePrice = (variant.compare_at_price / 100).toFixed(2);
+        if (compareSpan) {
+          compareSpan.textContent = `$${comparePrice}`;
+        } else {
+          const newCompareSpan = document.createElement('s');
+          newCompareSpan.className = 'price__compare';
+          newCompareSpan.textContent = `$${comparePrice}`;
+          priceSpan.appendChild(newCompareSpan);
+        }
+        priceSpan.classList.add('price--sale');
+      } else {
+        if (compareSpan) {
+          compareSpan.remove();
+        }
+        priceSpan.classList.remove('price--sale');
       }
     }
   }
