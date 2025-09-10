@@ -1,0 +1,766 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">Daily Calorie Calculator</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">Daily Calorie Calculator</h1>
+  <p class="intro-text">Estimate your daily calorie needs based on your age, gender, height, weight, and activity level. Whether you're maintaining, gaining, or losing weight, taking the right supplements consistently is crucial. <a href="pactcase.com/products/weekly-pill-organizer">Pact Case 7-day pill organizer</a> helps you stay on track with your nutrition plan by keeping your daily vitamins and supplements organized.</p>
+  
+  <div class="calculator-form">
+    <div class="form-group">
+      <div class="radio-group" id="unitSelector">
+        <label>
+          <input type="radio" name="units" value="metric" checked>
+          Metric (kg, cm)
+        </label>
+        <label>
+          <input type="radio" name="units" value="imperial">
+          Imperial (lbs, in)
+        </label>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="age">Age</label>
+        <input type="number" id="age" placeholder="e.g., 30" min="15" max="100">
+        <span class="error-message" id="age-error"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="metricInputs">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="height-cm">Height (cm)</label>
+          <input type="number" id="height-cm" placeholder="e.g., 170" min="1">
+          <span class="error-message" id="height-cm-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label for="weight-kg">Weight (kg)</label>
+          <input type="number" id="weight-kg" placeholder="e.g., 70" min="1" step="0.1">
+          <span class="error-message" id="weight-kg-error"></span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="imperialInputs" style="display: none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="height-in">Height (in)</label>
+          <input type="number" id="height-in" placeholder="e.g., 67" min="1">
+          <span class="error-message" id="height-in-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label for="weight-lbs">Weight (lbs)</label>
+          <input type="number" id="weight-lbs" placeholder="e.g., 154" min="1" step="0.1">
+          <span class="error-message" id="weight-lbs-error"></span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="activity">Activity Level</label>
+      <select id="activity">
+        <option value="1.2">Sedentary (little or no exercise)</option>
+        <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
+        <option value="1.55" selected>Moderately active (moderate exercise 3-5 days/week)</option>
+        <option value="1.725">Very active (hard exercise 6-7 days/week)</option>
+        <option value="1.9">Extra active (very hard exercise & physical job or 2x training)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="goal">Goal</label>
+      <select id="goal">
+        <option value="maintain">Maintain weight</option>
+        <option value="lose">Lose weight</option>
+        <option value="gain">Gain weight</option>
+      </select>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Calculate My Calorie Needs</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your Daily Calorie Results</h2>
+    
+    <!-- Enhanced visualization - Calorie Chart -->
+    <div class="result-chart-container">
+      <canvas id="calorieChart"></canvas>
+    </div>
+    
+    <div class="result-details">
+      <div class="form-row">
+        <div class="form-group">
+          <h3>Maintain Weight</h3>
+          <div class="result-value" id="maintainCalories"></div>
+          <p>Calories per day</p>
+        </div>
+        
+        <div class="form-group">
+          <h3>Lose Weight</h3>
+          <div class="result-value" id="loseCalories"></div>
+          <p>Calories per day (1lb/week)</p>
+        </div>
+        
+        <div class="form-group">
+          <h3>Gain Weight</h3>
+          <div class="result-value" id="gainCalories"></div>
+          <p>Calories per day (1lb/week)</p>
+        </div>
+      </div>
+    </div>
+    
+    <p><strong>Your Basal Metabolic Rate (BMR):</strong> <span id="bmrValue"></span> calories per day</p>
+    <p>The Basal Metabolic Rate (BMR) is the number of calories your body needs at rest to maintain basic functions like breathing and circulation.</p>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Your Nutrition Support Plan</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+    <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>What is BMR?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Basal Metabolic Rate (BMR) is the number of calories your body needs at rest to maintain basic functions like breathing, circulation, cell production, and temperature regulation. It represents the minimum energy required to keep your body functioning while at complete rest, typically accounting for 60-70% of your total daily calorie expenditure. BMR is influenced by factors like age, gender, weight, height, body composition, genetics, hormonal status, and even climate.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How do I lose weight with this calculator?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>To lose weight, aim to consume fewer calories than your maintenance level. The calculator suggests a 500 calorie daily deficit, which typically results in losing about 1 pound (0.45 kg) per week, as 3,500 calories equals approximately 1 pound of fat. For healthy, sustainable weight loss, most experts recommend not exceeding a 1,000 calorie daily deficit (about 2 pounds per week). Combine dietary changes with regular physical activity for best results. Always consult with a healthcare professional before starting any weight loss program, especially if you have medical conditions or are taking medications.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Why are my calculated calorie needs so different from what I actually eat?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Several factors might explain this discrepancy: 1) You may be underestimating or underreporting actual food intake, which studies show is common by 10-30%, 2) Your activity level might be overestimated in the calculator, 3) You might have a naturally higher or lower metabolic rate due to genetics, thyroid function, or other physiological factors, 4) If you've been restricting calories for a while, your metabolism might have adapted and slowed down (metabolic adaptation), or 5) Medical conditions like hypothyroidism could be affecting your metabolism. Track your intake accurately and adjust based on your real-world results over several weeks.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does muscle mass affect calorie needs?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Muscle mass significantly impacts calorie needs because muscle tissue is metabolically active and burns more calories than fat tissue, even at rest. Each pound of muscle burns approximately 6-10 calories per day at rest, compared to fat which burns about 2-3 calories. Someone with higher muscle mass might need 200-400 more daily calories than someone of the same weight with less muscle. This is why resistance training is valuable for weight management - it can increase your BMR and allow you to eat more while maintaining weight. Standard calorie calculators don't account for body composition, so those with more muscle might need to adjust calculations upward.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Should I eat back the calories I burn from exercise?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Whether to eat back exercise calories depends on your goals. For weight loss, eating back all calories can slow progress, as most devices and calculators overestimate calories burned by 15-30%. A good approach is to eat back 50% of your estimated exercise calories if you feel hungry or low on energy. For weight maintenance or muscle building, eating back most or all exercise calories helps support performance and recovery. Listen to your body's hunger signals and track your results over time. If you're losing weight too quickly (more than 1-2 pounds weekly) or experiencing fatigue, consider eating back more exercise calories.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How should I adjust my calories on rest days versus workout days?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Calorie cycling between workout and rest days can optimize both performance and body composition goals. On workout days, especially those with intense or long training sessions, higher calories support performance, recovery, and muscle growth, with emphasis on carbohydrates and protein. On rest days, a moderate reduction in calories (typically 200-300 calories less than workout days) aligns with lower energy needs, focusing more on protein and healthy fats while reducing carbohydrates. This approach, called calorie cycling, can help maintain muscle while managing body fat. The total weekly calorie balance still determines whether you'll gain, maintain, or lose weight.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What macronutrient ratio is best for weight loss?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The most effective macronutrient ratio for weight loss varies by individual, but some general guidelines exist: 1) Protein: 25-35% of calories (or 1.6-2.2g per kg of body weight) helps preserve muscle mass and increases satiety, 2) Carbohydrates: 30-45% of calories, focusing on fiber-rich, unprocessed sources, 3) Fats: 25-35% of calories from mostly unsaturated sources. Research shows that as long as you maintain a calorie deficit, various macro ratios can work for weight loss. The best approach is one you can sustain long-term, so personal food preferences matter. Those who are very active or trying to build muscle might benefit from higher carbohydrate intake, while some individuals find better appetite control with lower carb, higher fat approaches.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does age affect calorie needs?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Calorie needs typically decrease with age due to several factors: 1) Declining muscle mass (3-8% per decade after age 30) reduces metabolic rate, 2) Hormonal changes, particularly in middle age, can slow metabolism, 3) Decreased activity levels contribute to lower energy needs, and 4) Cell metabolism becomes less efficient with age. Research suggests metabolic rate decreases roughly 1-2% per decade after age 20, and 10-15% between ages 25-70. To maintain weight as you age, you'll likely need to reduce calories by about 100-150 per decade, increase physical activity (especially strength training to preserve muscle), or combine both approaches.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Why am I not losing weight even in a calorie deficit?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Several factors might explain weight loss plateaus despite a calculated deficit: 1) Unintentional underestimation of calorie intake (studies show people typically underreport by 20-30%), 2) Water retention masking fat loss, especially due to increased exercise, stress, or hormonal fluctuations, 3) Overestimation of activity level or BMR in calculations, 4) Metabolic adaptation where your body becomes more efficient with fewer calories, 5) Muscle gain offsetting fat loss (especially in beginners to strength training), or 6) Medical conditions like hypothyroidism or PCOS. Try measuring progress with body measurements and photos rather than just scale weight, and consider consulting a healthcare provider if plateaus persist beyond 3-4 weeks despite accurate tracking.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How many calories should I eat if I'm pregnant or breastfeeding?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Calorie needs increase during pregnancy and breastfeeding to support your baby's development and milk production. During pregnancy, the standard recommendation is maintaining your pre-pregnancy calorie intake during the first trimester, then adding about 340 extra calories daily in the second trimester and 450 extra calories daily in the third trimester. For breastfeeding, most women need approximately 500 extra calories daily. However, these are general guidelines - your specific needs may vary based on your pre-pregnancy weight, activity level, metabolism, and whether you're carrying multiples. Work with your healthcare provider to determine your individual needs, focusing on nutrient-dense foods rather than just calorie counts.</p>
+  </div>
+</div>
+</div>
+</div>
+  
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/bmi-calculator">BMI Calculator</a>
+        <p>Calculate your Body Mass Index to check if your weight is in a healthy range.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/target-heart-rate-calculator">Target Heart Rate Calculator</a>
+        <p>Find your optimal exercise intensity zones to maximize workout benefits.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/blood-pressure-checker">Blood Pressure Checker</a>
+        <p>Check your blood pressure readings against standard categories to understand your heart health status.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/a1c-converter">A1c - eAG Converter</a>
+        <p>Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/pregnancy-due-date-calculator">Pregnancy Due Date Calculator</a>
+        <p>Estimate your baby's due date and track your current pregnancy progress.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/daily-calorie-calculator#webpage",
+      "url": "https://pactcase.com/pages/daily-calorie-calculator",
+      "name": "Daily Calorie Calculator | TDEE Calculator | Pact Case",
+      "description": "Find out how many calories you need each day based on your age, gender, height, weight, activity level and goals with our free calculator.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/daily-calorie-calculator#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/daily-calorie-calculator"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/daily-calorie-calculator#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Daily Calorie Calculator"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/daily-calorie-calculator#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "Daily Calorie Calculator",
+        "description": "Estimate your daily calorie needs based on your age, gender, height, weight, and activity level",
+        "url": "https://pactcase.com/pages/daily-calorie-calculator",
+        "about": [
+          {
+            "@type": "MedicalProcedure",
+            "name": "Basal Metabolic Rate Calculation"
+          },
+          {
+            "@type": "MedicalProcedure",
+            "name": "Total Daily Energy Expenditure Estimation"
+          }
+        ],
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Nutrition"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is BMR?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Basal Metabolic Rate (BMR) is the number of calories your body needs at rest to maintain basic functions like breathing, circulation, cell production, and temperature regulation. It represents the minimum energy required to keep your body functioning while at complete rest, typically accounting for 60-70% of your total daily calorie expenditure. BMR is influenced by factors like age, gender, weight, height, body composition, genetics, hormonal status, and even climate."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I lose weight with this calculator?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "To lose weight, aim to consume fewer calories than your maintenance level. The calculator suggests a 500 calorie daily deficit, which typically results in losing about 1 pound (0.45 kg) per week, as 3,500 calories equals approximately 1 pound of fat. For healthy, sustainable weight loss, most experts recommend not exceeding a 1,000 calorie daily deficit (about 2 pounds per week). Combine dietary changes with regular physical activity for best results. Always consult with a healthcare professional before starting any weight loss program, especially if you have medical conditions or are taking medications."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why are my calculated calorie needs so different from what I actually eat?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Several factors might explain this discrepancy: 1) You may be underestimating or underreporting actual food intake, which studies show is common by 10-30%, 2) Your activity level might be overestimated in the calculator, 3) You might have a naturally higher or lower metabolic rate due to genetics, thyroid function, or other physiological factors, 4) If you've been restricting calories for a while, your metabolism might have adapted and slowed down (metabolic adaptation), or 5) Medical conditions like hypothyroidism could be affecting your metabolism. Track your intake accurately and adjust based on your real-world results over several weeks."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does muscle mass affect calorie needs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Muscle mass significantly impacts calorie needs because muscle tissue is metabolically active and burns more calories than fat tissue, even at rest. Each pound of muscle burns approximately 6-10 calories per day at rest, compared to fat which burns about 2-3 calories. Someone with higher muscle mass might need 200-400 more daily calories than someone of the same weight with less muscle. This is why resistance training is valuable for weight management - it can increase your BMR and allow you to eat more while maintaining weight. Standard calorie calculators don't account for body composition, so those with more muscle might need to adjust calculations upward."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Should I eat back the calories I burn from exercise?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Whether to eat back exercise calories depends on your goals. For weight loss, eating back all calories can slow progress, as most devices and calculators overestimate calories burned by 15-30%. A good approach is to eat back 50% of your estimated exercise calories if you feel hungry or low on energy. For weight maintenance or muscle building, eating back most or all exercise calories helps support performance and recovery. Listen to your body's hunger signals and track your results over time. If you're losing weight too quickly (more than 1-2 pounds weekly) or experiencing fatigue, consider eating back more exercise calories."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How should I adjust my calories on rest days versus workout days?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Calorie cycling between workout and rest days can optimize both performance and body composition goals. On workout days, especially those with intense or long training sessions, higher calories support performance, recovery, and muscle growth, with emphasis on carbohydrates and protein. On rest days, a moderate reduction in calories (typically 200-300 calories less than workout days) aligns with lower energy needs, focusing more on protein and healthy fats while reducing carbohydrates. This approach, called calorie cycling, can help maintain muscle while managing body fat. The total weekly calorie balance still determines whether you'll gain, maintain, or lose weight."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What macronutrient ratio is best for weight loss?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The most effective macronutrient ratio for weight loss varies by individual, but some general guidelines exist: 1) Protein: 25-35% of calories (or 1.6-2.2g per kg of body weight) helps preserve muscle mass and increases satiety, 2) Carbohydrates: 30-45% of calories, focusing on fiber-rich, unprocessed sources, 3) Fats: 25-35% of calories from mostly unsaturated sources. Research shows that as long as you maintain a calorie deficit, various macro ratios can work for weight loss. The best approach is one you can sustain long-term, so personal food preferences matter. Those who are very active or trying to build muscle might benefit from higher carbohydrate intake, while some individuals find better appetite control with lower carb, higher fat approaches."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does age affect calorie needs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Calorie needs typically decrease with age due to several factors: 1) Declining muscle mass (3-8% per decade after age 30) reduces metabolic rate, 2) Hormonal changes, particularly in middle age, can slow metabolism, 3) Decreased activity levels contribute to lower energy needs, and 4) Cell metabolism becomes less efficient with age. Research suggests metabolic rate decreases roughly 1-2% per decade after age 20, and 10-15% between ages 25-70. To maintain weight as you age, you'll likely need to reduce calories by about 100-150 per decade, increase physical activity (especially strength training to preserve muscle), or combine both approaches."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why am I not losing weight even in a calorie deficit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Several factors might explain weight loss plateaus despite a calculated deficit: 1) Unintentional underestimation of calorie intake (studies show people typically underreport by 20-30%), 2) Water retention masking fat loss, especially due to increased exercise, stress, or hormonal fluctuations, 3) Overestimation of activity level or BMR in calculations, 4) Metabolic adaptation where your body becomes more efficient with fewer calories, 5) Muscle gain offsetting fat loss (especially in beginners to strength training), or 6) Medical conditions like hypothyroidism or PCOS. Try measuring progress with body measurements and photos rather than just scale weight, and consider consulting a healthcare provider if plateaus persist beyond 3-4 weeks despite accurate tracking."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How many calories should I eat if I'm pregnant or breastfeeding?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Calorie needs increase during pregnancy and breastfeeding to support your baby's development and milk production. During pregnancy, the standard recommendation is maintaining your pre-pregnancy calorie intake during the first trimester, then adding about 340 extra calories daily in the second trimester and 450 extra calories daily in the third trimester. For breastfeeding, most women need approximately 500 extra calories daily. However, these are general guidelines - your specific needs may vary based on your pre-pregnancy weight, activity level, metabolism, and whether you're carrying multiples. Work with your healthcare provider to determine your individual needs, focusing on nutrient-dense foods rather than just calorie counts."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Add Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const unitSelector = document.getElementById('unitSelector');
+    const metricInputs = document.getElementById('metricInputs');
+    const imperialInputs = document.getElementById('imperialInputs');
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const bmrValue = document.getElementById('bmrValue');
+    const maintainCalories = document.getElementById('maintainCalories');
+    const loseCalories = document.getElementById('loseCalories');
+    const gainCalories = document.getElementById('gainCalories');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    let calorieChart = null;
+    
+    // Handle unit switching
+    unitSelector.addEventListener('change', function(e) {
+      if (e.target.value === 'metric') {
+        metricInputs.style.display = 'block';
+        imperialInputs.style.display = 'none';
+      } else if (e.target.value === 'imperial') {
+        metricInputs.style.display = 'none';
+        imperialInputs.style.display = 'block';
+      }
+    });
+    
+    // Calculate calories
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get selected unit
+      const selectedUnit = document.querySelector('input[name="units"]:checked').value;
+      
+      // Get common inputs
+      const age = parseInt(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const activityLevel = parseFloat(document.getElementById('activity').value);
+      const goal = document.getElementById('goal').value;
+      
+      let weight = 0;
+      let height = 0;
+      let isValid = true;
+      
+      // Validate age
+      if (isNaN(age) || age < 15 || age > 100) {
+        document.getElementById('age-error').textContent = 'Please enter a valid age (15-100)';
+        document.getElementById('age').classList.add('error');
+        isValid = false;
+      }
+      
+      if (selectedUnit === 'metric') {
+        height = parseFloat(document.getElementById('height-cm').value);
+        weight = parseFloat(document.getElementById('weight-kg').value);
+        
+        // Validate inputs
+        if (isNaN(height) || height <= 0) {
+          document.getElementById('height-cm-error').textContent = 'Please enter a valid height';
+          document.getElementById('height-cm').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isNaN(weight) || weight <= 0) {
+          document.getElementById('weight-kg-error').textContent = 'Please enter a valid weight';
+          document.getElementById('weight-kg').classList.add('error');
+          isValid = false;
+        }
+      } else {
+        height = parseFloat(document.getElementById('height-in').value);
+        weight = parseFloat(document.getElementById('weight-lbs').value);
+        
+        // Validate inputs
+        if (isNaN(height) || height <= 0) {
+          document.getElementById('height-in-error').textContent = 'Please enter a valid height';
+          document.getElementById('height-in').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isNaN(weight) || weight <= 0) {
+          document.getElementById('weight-lbs-error').textContent = 'Please enter a valid weight';
+          document.getElementById('weight-lbs').classList.add('error');
+          isValid = false;
+        }
+        
+        // Convert to metric for calculation
+        weight = weight / 2.20462; // lbs to kg
+        height = height * 2.54;    // in to cm
+      }
+      
+      if (isValid) {
+        // Calculate BMR using Mifflin-St Jeor Equation
+        let bmr = 0;
+        
+        if (gender === 'male') {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+        } else {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+        }
+        
+        // Calculate TDEE (Total Daily Energy Expenditure)
+        const tdee = Math.round(bmr * activityLevel);
+        
+        // Calculate calorie targets
+        const maintain = tdee;
+        const lose = Math.round(tdee - 500);
+        const gain = Math.round(tdee + 500);
+        
+        // Display results
+        bmrValue.textContent = Math.round(bmr);
+        maintainCalories.textContent = maintain;
+        loseCalories.textContent = lose;
+        gainCalories.textContent = gain;
+        
+        // Create or update chart
+        createCalorieChart(maintain, lose, gain);
+        
+        // Determine CTA text based on selected goal
+        let ctaText = '';
+        
+        switch(goal) {
+          case 'lose':
+            ctaText = "You've got your calorie target—nice work! Now, the key is to stick with it, and that means making sure you're not skimping on vitamins and minerals while cutting back. Let's be real: it's easy to miss out on nutrients when you're watching what you eat, and that can leave you feeling sluggish.<br><br>Our pill organizer? Total game-changer. Toss your multivitamins or fiber supplements into the daily compartments once a week, and you'll never have that \"Did I take them today?\" panic. It's one small thing that keeps you nourished and energized—so you can crush those weight loss goals without feeling run down. Makes the whole process feel way more doable.";
+            break;
+          case 'maintain':
+            ctaText = "Keeping that perfect balance? It's all about the small, consistent habits—and you're already on top of it. Taking your daily vitamins and minerals is like giving your body a little \"thank you\" for keeping things steady—boosts energy, keeps your immune system happy, all that good stuff.<br><br>But let's be honest: juggling a bunch of supplement bottles? Annoying. Our pill organizer simplifies it. Spend 2 minutes on Sunday prepping your week's doses, and suddenly those bottles cluttering your counter? Gone. It's a tiny ritual that makes self-care feel effortless—because you've got better things to do than hunt for pills. Adds a little calm to your routine.";
+            break;
+          case 'gain':
+            ctaText = "Gaining weight the right way? It's not just about eating more—it's about fueling your body to build strength, and that means nailing those nutrients. B vitamins to keep your energy up during workouts, protein supplements to support muscle growth… they're all key, but remembering to take them? Ugh.<br><br>Our pill organizer takes the stress out of it. Fill it once a week with your supplements and boom—no more \"Did I miss a dose?\" It lets you focus on what matters: eating well, hitting the gym, and seeing those gains. Let it handle the details so you can crush your goals. Your muscles will thank you.";
+            break;
+        }
+        
+        // Update CTA
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    
+    // Create calorie chart
+    function createCalorieChart(maintain, lose, gain) {
+      const ctx = document.getElementById('calorieChart').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (calorieChart) {
+        calorieChart.destroy();
+      }
+      
+      calorieChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Lose Weight', 'Maintain Weight', 'Gain Weight'],
+          datasets: [{
+            label: 'Daily Calories',
+            data: [lose, maintain, gain],
+            backgroundColor: [
+              '#84B7B6',
+              '#2D5F5D',
+              '#50817F'
+            ],
+            borderColor: [
+              '#84B7B6',
+              '#2D5F5D',
+              '#50817F'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: Math.min(lose, maintain, gain) * 0.8,
+              title: {
+                display: true,
+                text: 'Calories',
+                color: '#333333'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Goal',
+                color: '#333333'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.y + ' calories';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>

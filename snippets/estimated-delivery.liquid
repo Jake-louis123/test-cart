@@ -1,0 +1,48 @@
+{% comment %}
+  使用方法:
+  {% render 'estimated-delivery', 
+    delivery_text_color: section.settings.delivery_text_color,
+    start_date: start_date_formatted, 
+    end_date: end_date_formatted,
+    custom_class: 'optional-custom-class' 
+  %}
+{% endcomment %}
+
+{%- liquid
+  # 设置默认值
+  assign custom_class = custom_class | default: ''
+  
+  # 如果未提供开始和结束日期，计算默认日期
+  # 使用当前日期（因为在片段中需要自己计算）
+  if start_date == blank or end_date == blank
+    assign today_date = 'now' | date: '%s'
+    
+    # 默认的开始和结束天数（如果未从settings传递）
+  assign start_days = section.settings.delivery_start_days | times: 86400
+  assign end_days = section.settings.delivery_end_days | times: 86400
+    
+    assign start_date_calc = today_date | plus: start_days | date: '%s'
+    assign end_date_calc = today_date | plus: end_days | date: '%s'
+    
+    assign start_date = start_date | default: start_date_calc | date: '%b %d'
+    assign end_date = end_date | default: end_date_calc | date: '%b %d'
+  endif
+-%}
+
+<div class="estimated-delivery" style="color: {{ section.settings.delivery_text_color | default: '#16a34a' }}">
+  <span class="estimated-delivery__text">
+    Order today. ✅ Estimated delivery: {{ start_date }} - {{ end_date }} | 🎁 <a href="https://pactcase.com/policies/shipping-policy">Enjoy free delivery</a> | 🔙 <a href="https://pactcase.com/policies/refund-policy">30-day flexible returns</a>
+  </span>
+</div>
+
+<style>
+  .estimated-delivery {
+    display: flex;
+    align-items: center;
+    font-size: var(--font-size--sm, 14px);
+    line-height: 1.4;
+  }
+  .estimated-delivery__text {
+    display: inline-block;
+  }
+</style>

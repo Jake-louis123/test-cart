@@ -1,0 +1,240 @@
+<!doctype html>
+<html
+  class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}"
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+    {%- render 'stylesheets' -%}
+
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    <link
+      rel="expect"
+      href="#MainContent"
+      blocking="render"
+      id="view-transition-render-blocker"
+    >
+
+    {%- render 'meta-tags' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+    <!-- 安装了 Clarity 跟踪代码 -->
+    <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "sd8ha3z2hu");
+</script>
+    <!-- 结束安装了 Clarity 跟踪代码 -->
+    <!-- home结构化 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["Organization", "OnlineStore"],
+      "@id": "https://pactcase.com/#organization",
+      "name": "Pact Case",
+      "foundingDate": "2025-05-09",
+      "url": "https://pactcase.com",
+      "naics": "424210",
+      "logo": "https://cdn.shopify.com/s/files/1/0630/6227/8257/files/PACT-CASE-LOGO_2.png?v=1752112850",
+      "description": "At Pact Case, we help you keep the gentle pact you make with your well-being. <a href='https://pactcase.com/products/weekly-pill-organizer'>The premium pill & supplement case, reimagined</a>. No missed doses, no messed plans: Your tiny win, every day.</a>",
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+1 806 283-8130",
+          "contactType": "customer service",
+          "availableLanguage": "English"
+        },
+        {
+          "@type": "ContactPoint",
+          "email": "hi@pactcase.com",
+          "contactType": "customer service",
+          "availableLanguage": "English"
+        }
+      ],
+      "sameAs": [
+        "https://wa.me/18062838130",
+        "https://www.facebook.com/pactcase",
+        "https://www.instagram.com/pactcase",
+        "https://www.tiktok.com/@pactcase",
+        "https://x.com/PactCase"
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:30",
+          "closes": "18:30"
+        }
+      ],
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "@id": "https://pactcase.com/policies/refund-policy#policy",
+        "applicableCountry": ["US", "CA", "GB", "AU"],
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 30,
+        "itemCondition": "https://schema.org/NewCondition",
+        "returnMethod": "https://schema.org/ReturnByMail",
+        "returnRefundMethod": "https://schema.org/OriginalPaymentMethod",
+        "returnFees": "https://schema.org/ReturnFeesCustomerResponsibility",
+        "refundType": "https://schema.org/FullRefund",
+        "returnLabelSource": "https://schema.org/ReturnLabelCustomerResponsibility"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://pactcase.com/#website",
+      "url": "https://pactcase.com",
+      "name": "Pact Case - Weekly/Monthly Pill Organizer for Your Daily Tiny Win",
+      "description": "More than a <a href='https://pactcase.com/products/weekly-pill-organizer'>cute pill box</a>: Pact Case features oversized compartments and effortless access designed for your daily meds/supplements. Your tiny win starts here.",
+      "publisher": {
+        "@id": "https://pactcase.com/#organization"
+      },
+      "potentialAction": [
+        {
+          "@type": "SearchAction",
+          "target": "https://pactcase.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/a1c-converter",
+          "name": "A1C to Glucose Converter"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/blood-pressure-checker",
+          "name": "Blood Pressure Checker"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/bmi-calculator",
+          "name": "BMI Calculator"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/daily-calorie-calculator",
+          "name": "Daily Calorie Calculator"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/pregnancy-due-date-calculator",
+          "name": "Pregnancy Due Date Calculator"
+        },
+        {
+          "@type": "ViewAction",
+          "target": "https://pactcase.com/pages/target-heart-rate-calculator",
+          "name": "Target Heart Rate Calculator"
+        }
+      ],
+      "offers": {
+        "@type": "Offer",
+        "shippingDetails": [
+          // 美国运费 (USD) - 标准和快速
+          {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "USD" },
+            "shippingLabel": "Standard US Shipping",
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {"@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "DAY"},
+              "transitTime": {"@type": "QuantitativeValue", "minValue": 5, "maxValue": 8, "unitCode": "DAY"}
+            },
+            "shippingDestination": [{"@type": "DefinedRegion", "addressCountry": "US"}]
+          },
+          // 加拿大运费 (CAD) - 标准
+          {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "CAD" }, 
+            "shippingLabel": "Standard Canada Shipping",
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {"@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "DAY"},
+              "transitTime": {"@type": "QuantitativeValue", "minValue": 5, "maxValue": 8, "unitCode": "DAY"} 
+            },
+            "shippingDestination": [{"@type": "DefinedRegion", "addressCountry": "CA"}]
+          },
+          // 英国运费 (GBP) - 标准
+          {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "GBP" }, 
+            "shippingLabel": "Standard UK Shipping",
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {"@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "DAY"},
+              "transitTime": {"@type": "QuantitativeValue", "minValue": 5, "maxValue": 8, "unitCode": "DAY"} 
+            },
+            "shippingDestination": [{"@type": "DefinedRegion", "addressCountry": "GB"}]
+          },
+          // 澳大利亚运费 (AUD) - 标准
+          {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": "0", "currency": "AUD" }, // 示例值，请根据实际情况调整
+            "shippingLabel": "Standard Australia Shipping",
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {"@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "DAY"},
+              "transitTime": {"@type": "QuantitativeValue", "minValue": 5, "maxValue": 8, "unitCode": "DAY"} 
+            },
+            "shippingDestination": [{"@type": "DefinedRegion", "addressCountry": "AU"}]
+          }
+        ],
+        "hasMerchantReturnPolicy": {
+          "@id": "https://pactcase.com/policies/refund-policy#policy"
+        }
+      }
+    }
+  ]
+}
+</script>
+    <!-- home结构化 -->
+  </head>
+
+  <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% # theme-check-disable ParserBlockingScript %}
+    <script src="{{ 'critical.js' | asset_url }}"></script>
+    {% # theme-check-enable ParserBlockingScript %}
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+  </body>
+</html>

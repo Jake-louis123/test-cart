@@ -1,0 +1,698 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">Pregnancy Due Date Calculator</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">Pregnancy Due Date Calculator</h1>
+  <p class="intro-text">Estimate your baby's due date and track your current pregnancy progress. Prenatal vitamins are essential during pregnancy, and consistency is key for both you and your developing baby. <a href="pactcase.com/products/weekly-pill-organizer">Pact Case pregnancy-safe pill organizer</a> helps expectant mothers remember their daily prenatal vitamins, folic acid, and other doctor-recommended supplements throughout this important journey.</p>
+  
+  <div class="calculator-form">
+    <div class="form-group">
+      <label for="lmp-date">First Day of Your Last Menstrual Period</label>
+      <input type="date" id="lmp-date">
+      <span class="error-message" id="lmp-date-error"></span>
+      <small>This is the first day of your most recent period, not the date of conception.</small>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Calculate My Due Date</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your Pregnancy Details</h2>
+    
+    <!-- Enhanced visualization - Pregnancy Timeline -->
+    <div class="result-chart-container">
+      <canvas id="pregnancyChart"></canvas>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <h3>Estimated Due Date</h3>
+        <div class="result-value" id="dueDate"></div>
+      </div>
+      
+      <div class="form-group">
+        <h3>Current Gestational Age</h3>
+        <div class="result-value" id="gestationalAge"></div>
+      </div>
+    </div>
+    
+    <div class="result-details">
+      <h3>About Your Due Date</h3>
+      <p>Your due date is calculated using Naegele's Rule, which adds 280 days (40 weeks) to the first day of your last menstrual period. This is the standard method used by healthcare providers.</p>
+      <p>Remember that only about 5% of babies are born exactly on their due date. Most babies arrive within a week before or after this date.</p>
+      
+      <div id="trimesterInfo" style="margin-top: 1.5rem;">
+        <h3>Pregnancy Milestones</h3>
+        <ul>
+          <li><strong>First Trimester:</strong> Weeks 1-12</li>
+          <li><strong>Second Trimester:</strong> Weeks 13-26</li>
+          <li><strong>Third Trimester:</strong> Weeks 27-40+</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Support Your Pregnancy Journey</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+    <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>How is my due date calculated?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Your due date is calculated using Naegele's Rule, which adds 280 days (40 weeks) to the first day of your last menstrual period (LMP). The formula works by taking the first day of your LMP, subtracting 3 months, and then adding 7 days plus one year. This method assumes a 28-day menstrual cycle with ovulation occurring on day 14. This is the standard method used by healthcare providers, though it's important to remember that only about 4-5% of women deliver exactly on their due date - most deliver within two weeks before or after.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What are the pregnancy trimesters?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Pregnancy is divided into three trimesters, each approximately 13-14 weeks long: First Trimester (Weeks 1-12): Early development of the embryo, formation of major organs, and when morning sickness typically occurs. Second Trimester (Weeks 13-26): Often called the 'golden period' with less nausea, noticeable baby movement, and gender determination possible. Third Trimester (Weeks 27-40+): Rapid baby growth, preparation for birth, and increasing physical discomfort as the baby takes up more room. Each trimester has distinct developmental milestones and different considerations for maternal health.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How accurate is an ultrasound for determining due date?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Ultrasound accuracy for dating pregnancy depends on when it's performed. Early ultrasounds (before 14 weeks) are most accurate, with a margin of error of about 5-7 days. First-trimester ultrasounds, especially between 11-14 weeks, are considered the gold standard for dating pregnancy with accuracy within 5 days. Second-trimester scans (14-26 weeks) have a margin of error of about 10-14 days. Third-trimester ultrasounds are the least accurate for dating, with a margin of error of 2-3 weeks. If your early ultrasound date differs significantly from your LMP date, healthcare providers typically use the ultrasound date as it's usually more accurate, especially for women with irregular cycles.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What factors can affect my due date calculation?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Several factors can affect the accuracy of due date calculations: 1) Irregular menstrual cycles make LMP-based calculations less reliable, as ovulation may not occur on day 14, 2) Recent hormonal birth control use can affect cycle regularity, 3) Breastfeeding or recent pregnancy can delay ovulation, 4) Maternal age - younger women often deliver closer to their due date, while older first-time mothers more commonly deliver later, 5) Previous pregnancy history - your labor pattern may repeat, 6) Genetic factors from both parents, and 7) Multiple pregnancies typically deliver earlier (37 weeks is full-term for twins). These variables explain why due dates are considered estimates rather than firm deadlines.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What is the difference between gestational age and fetal age?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Gestational age and fetal age are two different ways of measuring pregnancy duration. Gestational age is calculated from the first day of your last menstrual period (LMP) and is typically about two weeks longer than fetal age. This is the standard clinical measurement used by healthcare providers and is what people mean when they say someone is '12 weeks pregnant.' Fetal age (or embryonic age) measures the actual time since conception/fertilization, which typically occurs about two weeks after the LMP in a 28-day cycle. For example, a fetus with a gestational age of 10 weeks has a fetal age of approximately 8 weeks. Medical literature and prenatal care use gestational age for consistency.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How likely am I to deliver on my exact due date?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Only about 4-5% of women deliver exactly on their due date. Pregnancy is considered full-term between 37 and 42 weeks, and most spontaneous deliveries occur within this five-week window. Statistics show that: 1) About 50% of first-time mothers deliver after their due date, 2) About 70% deliver within 10 days of their due date (either before or after), 3) About 90% deliver within two weeks of their due date. Women who have given birth before are slightly more likely to deliver earlier than first-time mothers. Due dates are best viewed as the middle of a range rather than an exact delivery date.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>When is a pregnancy considered full-term?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>According to the American College of Obstetricians and Gynecologists (ACOG), pregnancy terms are defined as: 1) Early Term: 37 weeks, 0 days through 38 weeks, 6 days, 2) Full Term: 39 weeks, 0 days through 40 weeks, 6 days, 3) Late Term: 41 weeks, 0 days through 41 weeks, 6 days, and 4) Post Term: 42 weeks, 0 days and beyond. These distinctions matter because babies born during the full-term period typically have the best health outcomes. Babies born before 39 weeks may face slightly higher risks of breathing problems, feeding difficulties, and temperature regulation issues, while post-term pregnancies can present increased risks for both mother and baby.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What if my conception date is known? Does that change my due date?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>If you know your exact conception date (from fertility tracking, assisted reproduction, or a single instance of intercourse), you can calculate a potentially more accurate due date by adding 266 days (38 weeks) to the conception date. This is because pregnancy actually lasts about 38 weeks from conception, rather than 40 weeks from LMP. Some healthcare providers will adjust your due date if the conception date is definitively known, particularly in cases of IVF where the embryo transfer date is precisely documented. However, many providers still use LMP-based dating for consistency in medical records, even when conception date is known, and may only adjust if there's a significant discrepancy with ultrasound findings.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What are signs that labor might start soon?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>As you approach your due date, several signs may indicate labor is approaching: 1) Lightening/dropping - when the baby descends lower into the pelvis, creating more breathing room but increasing pressure on the bladder, 2) Increased Braxton Hicks contractions that may become more regular, 3) Cervical changes including effacement (thinning) and dilation (opening), 4) Loss of the mucus plug and/or bloody show, 5) Rupture of membranes (water breaking), 6) Loose stools or diarrhea, 7) Sudden energy burst or nesting instinct, 8) Lower back pain or cramping that doesn't go away with position changes. True labor typically involves contractions that increase in frequency, duration, and intensity, while false labor contractions (Braxton Hicks) are irregular and often subside with rest or hydration.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does maternal age affect pregnancy duration?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Research shows that maternal age can influence pregnancy duration. Women over 35, particularly first-time mothers (nulliparous women), tend to have slightly longer pregnancies on average. Studies indicate that women over 40 are more likely to go beyond 41 weeks compared to younger women. Conversely, very young mothers (teens) sometimes have higher rates of preterm delivery. However, these are statistical trends with many individual variations. Other factors like race/ethnicity also play a role - studies show that pregnancy duration varies slightly among different ethnic groups. Your healthcare provider considers multiple factors, not just age, when monitoring your pregnancy progress and making recommendations about timing of delivery.</p>
+  </div>
+</div>
+</div>
+</div>
+  
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/daily-calorie-calculator">Daily Calorie Calculator</a>
+        <p>Find out how many calories you need each day based on your activity level and goals.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/blood-pressure-checker">Blood Pressure Checker</a>
+        <p>Check your blood pressure readings against standard categories to understand your heart health status.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/a1c-converter">A1c - eAG Converter</a>
+        <p>Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/bmi-calculator">BMI Calculator</a>
+        <p>Calculate your Body Mass Index to check if your weight is in a healthy range.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="/pages/heart-rate-calculator">Target Heart Rate Calculator</a>
+        <p>Find your optimal exercise heart rate zones for cardiovascular health.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/pregnancy-due-date-calculator#webpage",
+      "url": "https://pactcase.com/pages/pregnancy-due-date-calculator",
+      "name": "Pregnancy Due Date Calculator | Gestational Age Tool | Pact Case",
+      "description": "Estimate your baby's due date and track your current pregnancy progress with our free calculator based on your last menstrual period.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/pregnancy-due-date-calculator#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/pregnancy-due-date-calculator"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/pregnancy-due-date-calculator#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Pregnancy Due Date Calculator"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/pregnancy-due-date-calculator#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "Pregnancy Due Date Calculator",
+        "description": "Calculate your baby's estimated due date and current gestational age based on your last menstrual period",
+        "url": "https://pactcase.com/pages/pregnancy-due-date-calculator",
+        "about": [
+          {
+            "@type": "MedicalCondition",
+            "name": "Pregnancy"
+          },
+          {
+            "@type": "MedicalProcedure",
+            "name": "Naegele's Rule Calculation"
+          }
+        ],
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Obstetrics"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How is my due date calculated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your due date is calculated using Naegele's Rule, which adds 280 days (40 weeks) to the first day of your last menstrual period (LMP). The formula works by taking the first day of your LMP, subtracting 3 months, and then adding 7 days plus one year. This method assumes a 28-day menstrual cycle with ovulation occurring on day 14. This is the standard method used by healthcare providers, though it's important to remember that only about 4-5% of women deliver exactly on their due date - most deliver within two weeks before or after."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the pregnancy trimesters?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Pregnancy is divided into three trimesters, each approximately 13-14 weeks long: First Trimester (Weeks 1-12): Early development of the embryo, formation of major organs, and when morning sickness typically occurs. Second Trimester (Weeks 13-26): Often called the 'golden period' with less nausea, noticeable baby movement, and gender determination possible. Third Trimester (Weeks 27-40+): Rapid baby growth, preparation for birth, and increasing physical discomfort as the baby takes up more room. Each trimester has distinct developmental milestones and different considerations for maternal health."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is an ultrasound for determining due date?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ultrasound accuracy for dating pregnancy depends on when it's performed. Early ultrasounds (before 14 weeks) are most accurate, with a margin of error of about 5-7 days. First-trimester ultrasounds, especially between 11-14 weeks, are considered the gold standard for dating pregnancy with accuracy within 5 days. Second-trimester scans (14-26 weeks) have a margin of error of about 10-14 days. Third-trimester ultrasounds are the least accurate for dating, with a margin of error of 2-3 weeks. If your early ultrasound date differs significantly from your LMP date, healthcare providers typically use the ultrasound date as it's usually more accurate, especially for women with irregular cycles."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What factors can affect my due date calculation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Several factors can affect the accuracy of due date calculations: 1) Irregular menstrual cycles make LMP-based calculations less reliable, as ovulation may not occur on day 14, 2) Recent hormonal birth control use can affect cycle regularity, 3) Breastfeeding or recent pregnancy can delay ovulation, 4) Maternal age - younger women often deliver closer to their due date, while older first-time mothers more commonly deliver later, 5) Previous pregnancy history - your labor pattern may repeat, 6) Genetic factors from both parents, and 7) Multiple pregnancies typically deliver earlier (37 weeks is full-term for twins). These variables explain why due dates are considered estimates rather than firm deadlines."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between gestational age and fetal age?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Gestational age and fetal age are two different ways of measuring pregnancy duration. Gestational age is calculated from the first day of your last menstrual period (LMP) and is typically about two weeks longer than fetal age. This is the standard clinical measurement used by healthcare providers and is what people mean when they say someone is '12 weeks pregnant.' Fetal age (or embryonic age) measures the actual time since conception/fertilization, which typically occurs about two weeks after the LMP in a 28-day cycle. For example, a fetus with a gestational age of 10 weeks has a fetal age of approximately 8 weeks. Medical literature and prenatal care use gestational age for consistency."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How likely am I to deliver on my exact due date?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only about 4-5% of women deliver exactly on their due date. Pregnancy is considered full-term between 37 and 42 weeks, and most spontaneous deliveries occur within this five-week window. Statistics show that: 1) About 50% of first-time mothers deliver after their due date, 2) About 70% deliver within 10 days of their due date (either before or after), 3) About 90% deliver within two weeks of their due date. Women who have given birth before are slightly more likely to deliver earlier than first-time mothers. Due dates are best viewed as the middle of a range rather than an exact delivery date."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When is a pregnancy considered full-term?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "According to the American College of Obstetricians and Gynecologists (ACOG), pregnancy terms are defined as: 1) Early Term: 37 weeks, 0 days through 38 weeks, 6 days, 2) Full Term: 39 weeks, 0 days through 40 weeks, 6 days, 3) Late Term: 41 weeks, 0 days through 41 weeks, 6 days, and 4) Post Term: 42 weeks, 0 days and beyond. These distinctions matter because babies born during the full-term period typically have the best health outcomes. Babies born before 39 weeks may face slightly higher risks of breathing problems, feeding difficulties, and temperature regulation issues, while post-term pregnancies can present increased risks for both mother and baby."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if my conception date is known? Does that change my due date?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If you know your exact conception date (from fertility tracking, assisted reproduction, or a single instance of intercourse), you can calculate a potentially more accurate due date by adding 266 days (38 weeks) to the conception date. This is because pregnancy actually lasts about 38 weeks from conception, rather than 40 weeks from LMP. Some healthcare providers will adjust your due date if the conception date is definitively known, particularly in cases of IVF where the embryo transfer date is precisely documented. However, many providers still use LMP-based dating for consistency in medical records, even when conception date is known, and may only adjust if there's a significant discrepancy with ultrasound findings."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does maternal age affect pregnancy duration?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Research shows that maternal age can influence pregnancy duration. Women over 35, particularly first-time mothers (nulliparous women), tend to have slightly longer pregnancies on average. Studies indicate that women over 40 are more likely to go beyond 41 weeks compared to younger women. Conversely, very young mothers (teens) sometimes have higher rates of preterm delivery. However, these are statistical trends with many individual variations. Other factors like race/ethnicity also play a role - studies show that pregnancy duration varies slightly among different ethnic groups. Your healthcare provider considers multiple factors, not just age, when monitoring your pregnancy progress and making recommendations about timing of delivery."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are signs that labor might start soon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "As you approach your due date, several signs may indicate labor is approaching: 1) Lightening/dropping - when the baby descends lower into the pelvis, creating more breathing room but increasing pressure on the bladder, 2) Increased Braxton Hicks contractions that may become more regular, 3) Cervical changes including effacement (thinning) and dilation (opening), 4) Loss of the mucus plug and/or bloody show, 5) Rupture of membranes (water breaking), 6) Loose stools or diarrhea, 7) Sudden energy burst or nesting instinct, 8) Lower back pain or cramping that doesn't go away with position changes. True labor typically involves contractions that increase in frequency, duration, and intensity, while false labor contractions (Braxton Hicks) are irregular and often subside with rest or hydration."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Add Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const dueDate = document.getElementById('dueDate');
+    const gestationalAge = document.getElementById('gestationalAge');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    let pregnancyChart = null;
+    
+    // Set max date to today (can't select future dates)
+    const today = new Date();
+    const dateInput = document.getElementById('lmp-date');
+    dateInput.max = today.toISOString().split('T')[0];
+    
+    // Calculate due date
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get input
+      const lmpDate = new Date(document.getElementById('lmp-date').value);
+      
+      let isValid = true;
+      
+      // Validate input
+      if (isNaN(lmpDate.getTime())) {
+        document.getElementById('lmp-date-error').textContent = 'Please select a valid date';
+        document.getElementById('lmp-date').classList.add('error');
+        isValid = false;
+      } else if (lmpDate > today) {
+        document.getElementById('lmp-date-error').textContent = 'Date cannot be in the future';
+        document.getElementById('lmp-date').classList.add('error');
+        isValid = false;
+      }
+      
+      if (isValid) {
+        // Calculate due date using Naegele's Rule
+        // Due date = LMP + 280 days (or LMP - 3 months + 7 days + 1 year)
+        const dueDateCalc = new Date(lmpDate);
+        dueDateCalc.setDate(dueDateCalc.getDate() + 280);
+        
+        // Format due date as Month DD, YYYY
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDueDate = dueDateCalc.toLocaleDateString('en-US', options);
+        
+        // Calculate current gestational age
+        const pregnancyDuration = today - lmpDate;
+        const pregnancyDays = Math.floor(pregnancyDuration / (1000 * 60 * 60 * 24));
+        const pregnancyWeeks = Math.floor(pregnancyDays / 7);
+        const remainingDays = pregnancyDays % 7;
+        
+        // Update the display
+        dueDate.textContent = formattedDueDate;
+        gestationalAge.textContent = `${pregnancyWeeks} weeks and ${remainingDays} days`;
+        
+        // Create pregnancy timeline chart
+        createPregnancyChart(pregnancyWeeks, remainingDays);
+        
+        // Determine trimester and set CTA
+        let ctaText = '';
+        
+        if (pregnancyWeeks <= 12) {
+          // First trimester
+          ctaText = "Yay, congratulations on this amazing journey—how exciting to be in this early, special phase! We all know how much little things matter right now, and that folic acid? Total non-negotiable. But let's be honest: between morning sickness (if you're dealing with that) and the whirlwind of new emotions, remembering to take it every single day? It can slip through the cracks.<br><br>Our pill organizer? It's basically a tiny, reassuring helper. Made with food-grade, BPA-free materials (no worries there), it's simple to fill once a week—just pop your prenatal vitamins in the daily slots, and leave it somewhere you'll see it: next to your toothbrush, on the kitchen counter, wherever works. No more \"Did I take that today?\" panic. It's one small thing to make this phase feel a little calmer, so you can soak in all the joy. Mamas-to-be deserve that peace of mind.";
+        } else {
+          // Second/Third trimester
+          ctaText = "Look at you—your little one's growing, and so is that list of good stuff they need: calcium for those tiny bones, iron to keep energy up, DHA for brain development… phew, that's a lot to keep track of! And let's not forget \"pregnancy brain\"—we've all been there, staring at a supplement bottle and thinking, \"Did I take this already?\"<br><br>Our pill organizer is here to save the day. Sort out your daily supplements once a week, and those 1, 2, 3 labeled compartments will make it crystal clear what to take when. No more second-guessing, no more stress. Just grab and go, knowing you're giving your baby (and yourself!) exactly what they need. Makes this busy phase feel a little more manageable.";
+        }
+        
+        // Update CTA
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    
+    // Create pregnancy timeline chart
+    function createPregnancyChart(weeks, days) {
+      const ctx = document.getElementById('pregnancyChart').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (pregnancyChart) {
+        pregnancyChart.destroy();
+      }
+      
+      // Calculate pregnancy progress
+      const totalWeeks = 40;
+      const currentProgress = weeks + (days / 7);
+      const percentComplete = (currentProgress / totalWeeks) * 100;
+      
+      // Create the segments for each trimester
+      const firstTrimester = 12;
+      const secondTrimester = 14; // 13-26 weeks
+      const thirdTrimester = 14; // 27-40 weeks
+      
+      // Calculate which trimester the person is in
+      let currentTrimester = 1;
+      if (weeks > 26) {
+        currentTrimester = 3;
+      } else if (weeks > 12) {
+        currentTrimester = 2;
+      }
+      
+      // Create chart
+      pregnancyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Pregnancy Timeline'],
+          datasets: [
+            {
+              label: 'First Trimester',
+              data: [firstTrimester],
+              backgroundColor: currentTrimester === 1 ? '#2D5F5D' : '#84B7B6',
+              borderColor: '#E8F3F3',
+              borderWidth: 1
+            },
+            {
+              label: 'Second Trimester',
+              data: [secondTrimester],
+              backgroundColor: currentTrimester === 2 ? '#2D5F5D' : '#84B7B6',
+              borderColor: '#E8F3F3',
+              borderWidth: 1
+            },
+            {
+              label: 'Third Trimester',
+              data: [thirdTrimester],
+              backgroundColor: currentTrimester === 3 ? '#2D5F5D' : '#84B7B6',
+              borderColor: '#E8F3F3',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true,
+              max: 40,
+              title: {
+                display: true,
+                text: 'Weeks',
+                color: '#333333'
+              }
+            },
+            y: {
+              stacked: true,
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const trimesters = {
+                    'First Trimester': 'Weeks 1-12',
+                    'Second Trimester': 'Weeks 13-26',
+                    'Third Trimester': 'Weeks 27-40'
+                  };
+                  return trimesters[context.dataset.label];
+                }
+              }
+            }
+          }
+        },
+        plugins: [{
+          id: 'pregnancyMarker',
+          afterDraw: function(chart) {
+            const ctx = chart.ctx;
+            const xAxis = chart.scales.x;
+            const yAxis = chart.scales.y;
+            const chartArea = chart.chartArea;
+            
+            // Draw vertical line at current week
+            const xPixel = xAxis.getPixelForValue(currentProgress);
+            
+            if (xPixel >= chartArea.left && xPixel <= chartArea.right) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(xPixel, chartArea.top);
+              ctx.lineTo(xPixel, chartArea.bottom);
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = '#333333';
+              ctx.stroke();
+              
+              // Add "You are here" label
+              ctx.fillStyle = '#333333';
+              ctx.font = 'bold 12px Arial';
+              ctx.textAlign = 'center';
+              ctx.fillText('You are here', xPixel, chartArea.top - 10);
+              ctx.restore();
+            }
+          }
+        }]
+      });
+    }
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>

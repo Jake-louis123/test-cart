@@ -1,0 +1,694 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">Blood Pressure Checker</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">Blood Pressure Checker</h1>
+  <p class="intro-text">Check your blood pressure readings against standard categories to understand your heart health status. Many people take daily supplements to support cardiovascular health, and missing doses can affect their efficacy. <a href="pactcase.com/products/weekly-pill-organizer">Pact Case daily pill organizer</a> helps you maintain consistency with heart-healthy supplements and medications for optimal cardiovascular support.</p>
+  
+  <div class="calculator-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="systolic">Systolic Pressure (mmHg)</label>
+        <input type="number" id="systolic" placeholder="e.g., 120" min="70" max="250">
+        <span class="error-message" id="systolic-error"></span>
+        <small>The top number in your blood pressure reading</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="diastolic">Diastolic Pressure (mmHg)</label>
+        <input type="number" id="diastolic" placeholder="e.g., 80" min="40" max="150">
+        <span class="error-message" id="diastolic-error"></span>
+        <small>The bottom number in your blood pressure reading</small>
+      </div>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Analyze My Blood Pressure</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your Blood Pressure Analysis</h2>
+    <p class="result-core">Your blood pressure is <strong id="bpValue"></strong> mmHg</p>
+    
+    <!-- Enhanced visualization - Blood Pressure Gauge -->
+    <div class="result-chart-container">
+      <canvas id="bpGauge"></canvas>
+    </div>
+    
+    <div class="result-category" id="bpCategory"></div>
+    
+    <div class="result-details">
+      <p><strong>Blood Pressure Categories (According to AHA):</strong></p>
+      <ul>
+        <li><strong>Normal:</strong> Less than 120/80 mmHg</li>
+        <li><strong>Elevated:</strong> Systolic 120-129 and Diastolic less than 80 mmHg</li>
+        <li><strong>Hypertension Stage 1:</strong> Systolic 130-139 or Diastolic 80-89 mmHg</li>
+        <li><strong>Hypertension Stage 2:</strong> Systolic 140+ or Diastolic 90+ mmHg</li>
+        <li><strong>Hypertensive Crisis:</strong> Systolic 180+ or Diastolic 120+ mmHg (requires immediate medical attention)</li>
+      </ul>
+      <p><em>Source: <a href="https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings" target="_blank" rel="nofollow">American Heart Association (AHA)</a></em></p>
+    </div>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Support Your Heart Health</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+      <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>What is considered normal blood pressure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>According to the American Heart Association, normal blood pressure is less than 120/80 mmHg. The top number (systolic) measures pressure in your arteries when your heart beats, while the bottom number (diastolic) measures pressure between beats. A reading below 120/80 mmHg is considered optimal for most adults.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What are the stages of high blood pressure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The stages of high blood pressure according to American Heart Association guidelines are: 1) Elevated: Systolic 120-129 and Diastolic less than 80 mmHg, 2) Hypertension Stage 1: Systolic 130-139 or Diastolic 80-89 mmHg, 3) Hypertension Stage 2: Systolic 140+ or Diastolic 90+ mmHg, and 4) Hypertensive Crisis: Systolic 180+ or Diastolic 120+ mmHg, which requires immediate medical attention.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Which reading is more important, systolic or diastolic?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Both readings are important, but research suggests that systolic blood pressure (the top number) may be a stronger predictor of heart disease and stroke, especially in people over 50. However, elevated diastolic pressure (the bottom number) can also indicate increased risk, particularly in younger individuals. The American Heart Association recommends paying attention to both numbers and aiming to keep both within normal ranges.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Can anxiety cause high blood pressure readings?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Yes, anxiety can temporarily raise blood pressure readings through what's known as 'white coat hypertension' - when blood pressure rises due to the stress of being in a medical setting. Anxiety triggers the release of stress hormones that increase heart rate and constrict blood vessels. For accurate readings, try to relax for 5 minutes before measurement, avoid caffeine or exercise for 30 minutes prior, and consider home monitoring or 24-hour ambulatory monitoring if anxiety at doctor's visits is a concern.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How can I lower my blood pressure naturally?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Several evidence-based natural approaches can help lower blood pressure: 1) Follow the DASH diet (rich in fruits, vegetables, whole grains, and low-fat dairy), 2) Reduce sodium intake to less than 2,300mg daily, 3) Exercise regularly (150 minutes of moderate activity weekly), 4) Maintain a healthy weight, 5) Limit alcohol consumption, 6) Quit smoking, 7) Manage stress through meditation or deep breathing, 8) Ensure adequate sleep, and 9) Consider supplements like potassium, magnesium, or CoQ10 after consulting your doctor. These lifestyle changes can lower systolic blood pressure by 5-10 mmHg or more.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How often should I check my blood pressure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Frequency recommendations vary based on your current blood pressure and health status. For those with normal blood pressure (below 120/80 mmHg), checking once a year during routine physicals is usually sufficient. If you have elevated or high blood pressure, your doctor might recommend checking weekly or daily. Those with diagnosed hypertension or on blood pressure medications should monitor according to their doctor's advice, typically a few times per week. Home monitoring is valuable for tracking patterns and treatment effectiveness.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What time of day should I measure my blood pressure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Blood pressure naturally fluctuates throughout the day, typically being lowest while sleeping and rising in the morning. For consistent monitoring, measure at the same times each day. Many doctors recommend checking twice daily: in the morning before taking medications and in the evening. Morning readings should be taken before breakfast and medications, after emptying your bladder, and after sitting quietly for 5 minutes. Evening readings are best taken before dinner. Record the time with each reading to help identify patterns.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Can blood pressure medications be stopped once pressure is controlled?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Blood pressure medications should not be stopped without consulting your healthcare provider, even if your readings return to normal. The normal readings often indicate the medication is working effectively. Stopping suddenly can cause rebound hypertension, where blood pressure spikes dangerously. If you've made significant lifestyle changes and maintained normal blood pressure, your doctor might consider reducing dosages gradually while monitoring your response. Any medication changes should be part of a supervised plan with your healthcare provider.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Why is my blood pressure different in each arm?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Small differences (less than 10 mmHg) in blood pressure readings between arms are normal and occur in about 10% of people. However, consistent differences greater than 10 mmHg may indicate circulatory problems like peripheral artery disease, aortic dissection, or congenital heart defects. A difference of 15 mmHg or more correlates with increased cardiovascular risk and should be reported to your doctor. For accurate monitoring, your healthcare provider may recommend using the arm with the higher reading or alternating arms and noting which was used.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What's the link between salt intake and blood pressure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Salt (sodium chloride) intake is directly linked to blood pressure in many people. Sodium causes your body to retain water, increasing blood volume and pressure against arterial walls. Research shows that reducing sodium intake can lower systolic blood pressure by 2-8 mmHg in many individuals. However, salt sensitivity varies - about 30-50% of people with hypertension are particularly salt-sensitive. The American Heart Association recommends limiting sodium to 2,300mg daily, with an ideal limit of 1,500mg for most adults, especially those with hypertension, diabetes, or kidney disease.</p>
+  </div>
+</div>
+</div>
+</div>
+  
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="/pages/heart-rate-calculator">Target Heart Rate Calculator</a>
+        <p>Find your optimal exercise heart rate zones for cardiovascular health.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/a1c-converter">A1c - eAG Converter</a>
+        <p>Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/bmi-calculator">BMI Calculator</a>
+        <p>Calculate your Body Mass Index to check if your weight is in a healthy range.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/daily-calorie-calculator">Daily Calorie Calculator</a>
+        <p>Find out how many calories you need each day based on your activity level and goals.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/pregnancy-due-date-calculator">Pregnancy Due Date Calculator</a>
+        <p>Estimate your baby's due date and track your current pregnancy progress.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/blood-pressure-checker#webpage",
+      "url": "https://pactcase.com/pages/blood-pressure-checker",
+      "name": "Blood Pressure Checker | Hypertension Calculator | Pact Case",
+      "description": "Check your blood pressure readings against standard categories to understand your heart health status with our free calculator.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/blood-pressure-checker#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/blood-pressure-checker"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/blood-pressure-checker#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blood Pressure Checker"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/blood-pressure-checker#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "Blood Pressure Checker",
+        "description": "Calculate and interpret your blood pressure readings according to American Heart Association guidelines",
+        "url": "https://pactcase.com/pages/blood-pressure-checker",
+        "about": [
+          {
+            "@type": "MedicalCondition",
+            "name": "Hypertension"
+          },
+          {
+            "@type": "MedicalTest",
+            "name": "Blood Pressure Measurement"
+          }
+        ],
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Cardiology"
+      }
+    }
+  ]
+}
+</script>
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is considered normal blood pressure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "According to the American Heart Association, normal blood pressure is less than 120/80 mmHg. The top number (systolic) measures pressure in your arteries when your heart beats, while the bottom number (diastolic) measures pressure between beats. A reading below 120/80 mmHg is considered optimal for most adults."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the stages of high blood pressure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The stages of high blood pressure according to American Heart Association guidelines are: 1) Elevated: Systolic 120-129 and Diastolic less than 80 mmHg, 2) Hypertension Stage 1: Systolic 130-139 or Diastolic 80-89 mmHg, 3) Hypertension Stage 2: Systolic 140+ or Diastolic 90+ mmHg, and 4) Hypertensive Crisis: Systolic 180+ or Diastolic 120+ mmHg, which requires immediate medical attention."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which reading is more important, systolic or diastolic?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Both readings are important, but research suggests that systolic blood pressure (the top number) may be a stronger predictor of heart disease and stroke, especially in people over 50. However, elevated diastolic pressure (the bottom number) can also indicate increased risk, particularly in younger individuals. The American Heart Association recommends paying attention to both numbers and aiming to keep both within normal ranges."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can anxiety cause high blood pressure readings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, anxiety can temporarily raise blood pressure readings through what's known as 'white coat hypertension' - when blood pressure rises due to the stress of being in a medical setting. Anxiety triggers the release of stress hormones that increase heart rate and constrict blood vessels. For accurate readings, try to relax for 5 minutes before measurement, avoid caffeine or exercise for 30 minutes prior, and consider home monitoring or 24-hour ambulatory monitoring if anxiety at doctor's visits is a concern."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I lower my blood pressure naturally?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Several evidence-based natural approaches can help lower blood pressure: 1) Follow the DASH diet (rich in fruits, vegetables, whole grains, and low-fat dairy), 2) Reduce sodium intake to less than 2,300mg daily, 3) Exercise regularly (150 minutes of moderate activity weekly), 4) Maintain a healthy weight, 5) Limit alcohol consumption, 6) Quit smoking, 7) Manage stress through meditation or deep breathing, 8) Ensure adequate sleep, and 9) Consider supplements like potassium, magnesium, or CoQ10 after consulting your doctor. These lifestyle changes can lower systolic blood pressure by 5-10 mmHg or more."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How often should I check my blood pressure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Frequency recommendations vary based on your current blood pressure and health status. For those with normal blood pressure (below 120/80 mmHg), checking once a year during routine physicals is usually sufficient. If you have elevated or high blood pressure, your doctor might recommend checking weekly or daily. Those with diagnosed hypertension or on blood pressure medications should monitor according to their doctor's advice, typically a few times per week. Home monitoring is valuable for tracking patterns and treatment effectiveness."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What time of day should I measure my blood pressure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Blood pressure naturally fluctuates throughout the day, typically being lowest while sleeping and rising in the morning. For consistent monitoring, measure at the same times each day. Many doctors recommend checking twice daily: in the morning before taking medications and in the evening. Morning readings should be taken before breakfast and medications, after emptying your bladder, and after sitting quietly for 5 minutes. Evening readings are best taken before dinner. Record the time with each reading to help identify patterns."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can blood pressure medications be stopped once pressure is controlled?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Blood pressure medications should not be stopped without consulting your healthcare provider, even if your readings return to normal. The normal readings often indicate the medication is working effectively. Stopping suddenly can cause rebound hypertension, where blood pressure spikes dangerously. If you've made significant lifestyle changes and maintained normal blood pressure, your doctor might consider reducing dosages gradually while monitoring your response. Any medication changes should be part of a supervised plan with your healthcare provider."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is my blood pressure different in each arm?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Small differences (less than 10 mmHg) in blood pressure readings between arms are normal and occur in about 10% of people. However, consistent differences greater than 10 mmHg may indicate circulatory problems like peripheral artery disease, aortic dissection, or congenital heart defects. A difference of 15 mmHg or more correlates with increased cardiovascular risk and should be reported to your doctor. For accurate monitoring, your healthcare provider may recommend using the arm with the higher reading or alternating arms and noting which was used."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the link between salt intake and blood pressure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Salt (sodium chloride) intake is directly linked to blood pressure in many people. Sodium causes your body to retain water, increasing blood volume and pressure against arterial walls. Research shows that reducing sodium intake can lower systolic blood pressure by 2-8 mmHg in many individuals. However, salt sensitivity varies - about 30-50% of people with hypertension are particularly salt-sensitive. The American Heart Association recommends limiting sodium to 2,300mg daily, with an ideal limit of 1,500mg for most adults, especially those with hypertension, diabetes, or kidney disease."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Add Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const bpValue = document.getElementById('bpValue');
+    const bpCategory = document.getElementById('bpCategory');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    let bpGaugeChart = null;
+    
+    // Calculate blood pressure category
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get inputs
+      const systolic = parseInt(document.getElementById('systolic').value);
+      const diastolic = parseInt(document.getElementById('diastolic').value);
+      
+      let isValid = true;
+      
+      // Validate inputs
+      if (isNaN(systolic) || systolic < 70 || systolic > 250) {
+        document.getElementById('systolic-error').textContent = 'Please enter a valid systolic pressure (70-250)';
+        document.getElementById('systolic').classList.add('error');
+        isValid = false;
+      }
+      
+      if (isNaN(diastolic) || diastolic < 40 || diastolic > 150) {
+        document.getElementById('diastolic-error').textContent = 'Please enter a valid diastolic pressure (40-150)';
+        document.getElementById('diastolic').classList.add('error');
+        isValid = false;
+      }
+      
+      if (isValid) {
+        // Determine blood pressure category
+        let category = '';
+        let categoryClass = '';
+        let gaugeValue = 0;
+        let ctaText = '';
+        
+        // Logic tree based on AHA guidelines
+        if (systolic > 180 || diastolic > 120) {
+          category = 'Hypertensive Crisis - Seek Emergency Care!';
+          categoryClass = 'category-danger';
+          gaugeValue = 5; // Position on gauge
+          ctaText = "First off—kudos for staying on top of this. Managing blood pressure at this stage means being super consistent with your meds, and we get it: that can feel like a lot. Missing a dose even once? Stressful, and we want to take that worry off your plate.<br><br>Our pill organizer is designed for exactly this: clear, labeled compartments for each day and dose, so you can see at a glance if you've taken your meds. No more guessing, no more last-minute panic. Spend 5 minutes on Sunday prepping, and the rest of the week? Smooth sailing. It's not just a tool—it's peace of mind, so you can focus on feeling your best. Because you deserve one less thing to stress about.";
+        } else if (systolic >= 140 || diastolic >= 90) {
+          category = 'Hypertension Stage 2';
+          categoryClass = 'category-danger';
+          gaugeValue = 4; // Position on gauge
+          ctaText = "First off—kudos for staying on top of this. Managing blood pressure at this stage means being super consistent with your meds, and we get it: that can feel like a lot. Missing a dose even once? Stressful, and we want to take that worry off your plate.<br><br>Our pill organizer is designed for exactly this: clear, labeled compartments for each day and dose, so you can see at a glance if you've taken your meds. No more guessing, no more last-minute panic. Spend 5 minutes on Sunday prepping, and the rest of the week? Smooth sailing. It's not just a tool—it's peace of mind, so you can focus on feeling your best. Because you deserve one less thing to stress about.";
+        } else if (systolic >= 130 || diastolic >= 80) {
+          category = 'Hypertension Stage 1';
+          categoryClass = 'category-warning';
+          gaugeValue = 3; // Position on gauge
+          ctaText = "First off—kudos for staying on top of this. Managing blood pressure at this stage means being super consistent with your meds, and we get it: that can feel like a lot. Missing a dose even once? Stressful, and we want to take that worry off your plate.<br><br>Our pill organizer is designed for exactly this: clear, labeled compartments for each day and dose, so you can see at a glance if you've taken your meds. No more guessing, no more last-minute panic. Spend 5 minutes on Sunday prepping, and the rest of the week? Smooth sailing. It's not just a tool—it's peace of mind, so you can focus on feeling your best. Because you deserve one less thing to stress about.";
+        } else if (systolic >= 120 && diastolic < 80) {
+          category = 'Elevated Blood Pressure';
+          categoryClass = 'category-warning';
+          gaugeValue = 2; // Position on gauge
+          ctaText = "Heads up—this is your body giving you a gentle nudge to pay a little extra attention to your heart health. No need to panic, but it's a good reminder to lean into those small changes: maybe more veggies, a little less salt, or sticking to any supplements your doc suggested.<br><br>The tricky part? Remembering to take those supplements daily. Our pill organizer? It's like a little helper. Fill it once a week, set it by your bag, and you'll see it first thing. No more \"Did I take that today?\" It's one simple step to build a solid habit—so you can stay on top of things and keep that blood pressure in check. Takes the hassle out of self-care.";
+        } else if (systolic < 120 && diastolic < 80) {
+          category = 'Normal Blood Pressure';
+          categoryClass = 'category-normal';
+          gaugeValue = 1; // Position on gauge
+          ctaText = "Awesome news—your blood pressure's right where it should be! That's proof all those little healthy habits (the walks, the balanced meals) are paying off. If you're taking supplements like fish oil or vitamin D to keep that heart happy, good call—consistency is key here.<br><br>But let's be real: remembering to take them every single day? It's easy to slip up, especially on busy mornings. Our pill organizer takes that stress away. Spend 5 minutes on Sunday divvying up your weekly doses, and suddenly it's just… done. No more rummaging through bottles or second-guessing. It's a tiny way to make that healthy routine feel effortless—because you're already nailing the big stuff. Keeps that momentum going, easy peasy.";
+        } else {
+          category = 'Invalid reading';
+          categoryClass = 'category-info';
+          gaugeValue = 0;
+          ctaText = "It looks like there might be something unusual about your reading. Blood pressure readings can sometimes be inaccurate due to many factors. Try taking another reading after resting for 5 minutes, making sure the cuff is properly positioned.<br><br>Consistent monitoring is key to managing heart health. Our pill organizer can help if you're taking supplements or medications for your heart. It makes it easy to stay on track with your health regimen by giving you a clear visual of what to take and when. Keeping up with your heart health routine shouldn't add stress to your day.";
+        }
+        
+        // Update the display
+        bpValue.textContent = `${systolic}/${diastolic}`;
+        bpCategory.textContent = category;
+        bpCategory.className = 'result-category ' + categoryClass;
+        
+        // Create or update gauge chart
+        createBPGaugeChart(gaugeValue);
+        
+        // Update CTA
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    
+    // Create blood pressure gauge chart
+    function createBPGaugeChart(value) {
+      const ctx = document.getElementById('bpGauge').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (bpGaugeChart) {
+        bpGaugeChart.destroy();
+      }
+      
+      // Chart configuration
+      bpGaugeChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [1, 1, 1, 1, 1, 5],
+            backgroundColor: [
+              '#2D5F5D',  // Normal
+              '#84B7B6',  // Elevated
+              '#f1c40f',  // Stage 1
+              '#e67e22',  // Stage 2
+              '#e74c3c',  // Crisis
+              '#E8F3F3'   // Background
+            ],
+            borderWidth: 0,
+            circumference: 180,
+            rotation: 270
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: false
+            }
+          }
+        },
+        plugins: [{
+          id: 'bloodPressureNeedle',
+          afterDraw: function(chart) {
+            if (value >= 0) {
+              const ctx = chart.ctx;
+              const xCenter = chart.chartArea.width / 2 + chart.chartArea.left;
+              const yCenter = chart.chartArea.bottom;
+              const radius = chart.innerRadius * 0.8;
+              
+              // Calculate needle position based on blood pressure category (0-5)
+              // Convert to angle in radians (0 = straight up, Math.PI = straight down)
+              const angleRad = (value / 5) * Math.PI;
+              
+              // Calculate endpoint of needle
+              const xEnd = xCenter + radius * Math.cos(angleRad);
+              const yEnd = yCenter - radius * Math.sin(angleRad);
+              
+              // Draw needle
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(xCenter, yCenter);
+              ctx.lineTo(xEnd, yEnd);
+              ctx.lineWidth = 3;
+              ctx.strokeStyle = '#333333';
+              ctx.stroke();
+              
+              // Draw circle at needle pivot
+              ctx.beginPath();
+              ctx.arc(xCenter, yCenter, 5, 0, 2 * Math.PI);
+              ctx.fillStyle = '#333333';
+              ctx.fill();
+              
+              // Add category labels
+              ctx.textAlign = 'center';
+              ctx.fillStyle = '#333333';
+              ctx.font = '11px Arial';
+              
+              // Position labels around gauge
+              const labelRadius = radius * 1.15;
+              
+              // Normal
+              let angle = 0.1 * Math.PI;
+              let x = xCenter + labelRadius * Math.cos(angle);
+              let y = yCenter - labelRadius * Math.sin(angle);
+              ctx.fillText('Normal', x, y);
+              
+              // Elevated
+              angle = 0.3 * Math.PI;
+              x = xCenter + labelRadius * Math.cos(angle);
+              y = yCenter - labelRadius * Math.sin(angle);
+              ctx.fillText('Elevated', x, y);
+              
+              // Stage 1
+              angle = 0.5 * Math.PI;
+              x = xCenter + labelRadius * Math.cos(angle);
+              y = yCenter - labelRadius * Math.sin(angle);
+              ctx.fillText('Stage 1', x, y);
+              
+              // Stage 2
+              angle = 0.7 * Math.PI;
+              x = xCenter + labelRadius * Math.cos(angle);
+              y = yCenter - labelRadius * Math.sin(angle);
+              ctx.fillText('Stage 2', x, y);
+              
+              // Crisis
+              angle = 0.9 * Math.PI;
+              x = xCenter + labelRadius * Math.cos(angle);
+              y = yCenter - labelRadius * Math.sin(angle);
+              ctx.fillText('Crisis', x, y);
+              
+              ctx.restore();
+            }
+          }
+        }]
+      });
+    }
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>

@@ -1,0 +1,688 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">A1C to Glucose Converter</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">A1C to Average Blood Glucose Converter</h1>
+  <p class="intro-text">Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L. Managing blood sugar often requires consistent supplement routines and medication schedules. <a href="pactcase.com/products/weekly-pill-organizer">Pact Case extra large pill organizer 7 day</a> helps you maintain the regularity needed for better glycemic control by organizing your daily supplements.</p>
+  
+  <div class="calculator-form">
+    <div class="form-group">
+      <label for="a1c">Your A1C Value (%)</label>
+      <input type="number" id="a1c" placeholder="e.g., 6.5" min="4" max="14" step="0.1">
+      <span class="error-message" id="a1c-error"></span>
+      <small>Typical A1C ranges from 4% to 14%. Values outside this range may not provide accurate conversions.</small>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Convert Now</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your Estimated Average Glucose</h2>
+    
+    <!-- Enhanced visualization - A1C Chart -->
+    <div class="result-chart-container">
+      <canvas id="a1cChart"></canvas>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label>US Standard (mg/dL)</label>
+        <div class="result-value" id="mgdlValue"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>International Standard (mmol/L)</label>
+        <div class="result-value" id="mmolValue"></div>
+      </div>
+    </div>
+    
+    <div class="result-category" id="a1cCategory"></div>
+    
+    <div class="result-details">
+      <p><strong>What This Means:</strong></p>
+      <p>The A1C test measures your average blood glucose over the past 2-3 months. It provides insight into long-term blood sugar control rather than a single point-in-time reading.</p>
+      <p><strong>General A1C Targets:</strong></p>
+      <ul>
+        <li><strong>Below 5.7%:</strong> Normal (non-diabetic) range</li>
+        <li><strong>5.7% - 6.4%:</strong> Prediabetes range</li>
+        <li><strong>6.5% or above:</strong> Diabetes range</li>
+        <li><strong>7% or below:</strong> Target for many adults with diabetes (though your doctor may set different targets based on your individual situation)</li>
+      </ul>
+      <p><em>Note: Target ranges may vary based on individual factors. Always consult with your healthcare provider about your specific goals.</em></p>
+    </div>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Support Your Blood Sugar Management</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+  <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>What does A1C measure?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The A1C test measures your average blood glucose over the past 2-3 months. It provides insight into long-term blood sugar control rather than a single point-in-time reading. The test works by measuring the percentage of hemoglobin proteins in your blood that are coated with sugar (glycated).</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What is a normal A1C level?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>A normal A1C level is below 5.7%. 5.7% to 6.4% indicates prediabetes, and 6.5% or higher indicates diabetes. The target for many adults with diabetes is 7% or below, though individual targets may vary based on your doctor's recommendations, your age, and other health conditions you may have.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How often should I get my A1C tested?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>For people with diabetes, the American Diabetes Association typically recommends A1C testing twice a year if your blood sugar is well-controlled and you're meeting treatment goals. If your therapy has changed or you're not meeting goals, testing every 3 months is recommended. For those without diabetes but with risk factors, screening every 3 years is often suggested. Always follow your healthcare provider's specific recommendations.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Why is my A1C high when my glucose readings are normal?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>This discrepancy can occur for several reasons: 1) You might be missing high glucose spikes between readings, 2) You could have conditions that affect red blood cell turnover (like anemia or certain hemoglobin variants), 3) Some medications may affect results, or 4) Your glucometer might need calibration. It's important to discuss these differences with your healthcare provider to understand what's happening in your specific case.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Can I lower my A1C quickly?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>A1C reflects your average blood sugar over 2-3 months, so meaningful changes typically take at least 2-3 months to appear in test results. However, you can begin lowering your blood glucose immediately through consistent medication adherence, regular physical activity, dietary changes, stress management, and adequate sleep. Many people see significant improvements within 3 months of making comprehensive lifestyle changes. Always work with your healthcare provider on a safe plan to lower A1C.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How accurate is the conversion between A1C and average glucose?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The conversion formula (eAG = 28.7 × A1C − 46.7) is based on research from the ADAG (A1C-Derived Average Glucose) study and works well for most people. However, it's an estimate that assumes normal red blood cell lifespan. The accuracy may vary by about 15-20% for individuals, and certain conditions affecting hemoglobin (like anemia, kidney disease, or certain hemoglobin variants) can make the correlation less reliable. Your healthcare provider can help determine if the conversion is accurate for your specific situation.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Does stress affect A1C levels?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Yes, stress can indirectly affect A1C levels by raising blood glucose. When you're stressed, your body releases stress hormones like cortisol and adrenaline, which can increase blood sugar levels. Prolonged stress over the 2-3 month period reflected in your A1C test can contribute to higher readings. Additionally, stress might impact your eating habits, sleep, and exercise routine, all of which affect blood sugar control. Stress management techniques like meditation, yoga, and adequate sleep can help mitigate these effects.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Can diet alone lower my A1C?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Yes, dietary changes alone can significantly lower A1C, especially in prediabetes or early type 2 diabetes. Research shows that reducing carbohydrate intake, especially refined carbs and added sugars, can help. Focus on a balanced diet rich in non-starchy vegetables, lean proteins, healthy fats, and moderate amounts of whole grains. Some studies have shown A1C reductions of 0.5-2% with dietary changes within 3-6 months. However, the effectiveness depends on your starting A1C, how consistently you follow the diet, and your individual metabolic factors.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does exercise affect A1C levels?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Regular exercise can significantly lower A1C levels by improving insulin sensitivity and helping muscles use glucose more efficiently. Both aerobic exercises (like walking or swimming) and resistance training (strength exercises) are beneficial. Studies show that consistent exercise can reduce A1C by 0.5-0.7% without any medication changes. The American Diabetes Association recommends at least 150 minutes of moderate-intensity activity per week, spread over at least 3 days with no more than 2 consecutive days without activity. Always start gradually and consult your healthcare provider before beginning a new exercise program.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does a continuous glucose monitor (CGM) relate to A1C?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Continuous Glucose Monitors (CGMs) and A1C provide complementary information about your blood sugar control. While A1C gives a 2-3 month average, CGMs show real-time glucose levels and patterns throughout the day and night. CGMs can reveal high and low spikes that A1C might miss, and they provide metrics like Time in Range (TIR), which many doctors now consider alongside A1C. Some CGM systems even estimate your current A1C based on continuous readings. Using both tools gives you and your healthcare provider the most complete picture of your glucose management.</p>
+  </div>
+</div>
+</div>
+</div>
+
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/blood-pressure-checker">Blood Pressure Checker</a>
+        <p>Check your blood pressure readings against standard categories to understand your heart health status.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/bmi-calculator">BMI Calculator</a>
+        <p>Calculate your Body Mass Index to check if your weight is in a healthy range.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/target-heart-rate-calculator">Target Heart Rate Calculator</a>
+        <p>Find your optimal exercise intensity zones to maximize workout benefits.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/daily-calorie-calculator">Daily Calorie Calculator</a>
+        <p>Find out how many calories you need each day based on your activity level and goals.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/pregnancy-due-date-calculator">Pregnancy Due Date Calculator</a>
+        <p>Estimate your baby's due date and track your current pregnancy progress.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/a1c-converter#webpage",
+      "url": "https://pactcase.com/pages/a1c-converter",
+      "name": "A1C to Glucose Converter | Blood Sugar Calculator | Pact Case",
+      "description": "Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L with our free calculator. Perfect for diabetes management.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/a1c-converter#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/a1c-converter"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/a1c-converter#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "A1C to Glucose Converter"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/a1c-converter#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "A1C to Average Blood Glucose Converter",
+        "description": "Converts A1C percentage to estimated average glucose levels for diabetes management",
+        "url": "https://pactcase.com/pages/a1c-converter",
+        "about": [
+          {
+            "@type": "MedicalCondition",
+            "name": "Diabetes"
+          },
+          {
+            "@type": "MedicalTestPanel",
+            "name": "A1C Test"
+          }
+        ],
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Endocrinology"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What does A1C measure?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The A1C test measures your average blood glucose over the past 2-3 months. It provides insight into long-term blood sugar control rather than a single point-in-time reading. The test works by measuring the percentage of hemoglobin proteins in your blood that are coated with sugar (glycated)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a normal A1C level?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A normal A1C level is below 5.7%. 5.7% to 6.4% indicates prediabetes, and 6.5% or higher indicates diabetes. The target for many adults with diabetes is 7% or below, though individual targets may vary based on your doctor's recommendations, your age, and other health conditions you may have."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How often should I get my A1C tested?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For people with diabetes, the American Diabetes Association typically recommends A1C testing twice a year if your blood sugar is well-controlled and you're meeting treatment goals. If your therapy has changed or you're not meeting goals, testing every 3 months is recommended. For those without diabetes but with risk factors, screening every 3 years is often suggested. Always follow your healthcare provider's specific recommendations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is my A1C high when my glucose readings are normal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "This discrepancy can occur for several reasons: 1) You might be missing high glucose spikes between readings, 2) You could have conditions that affect red blood cell turnover (like anemia or certain hemoglobin variants), 3) Some medications may affect results, or 4) Your glucometer might need calibration. It's important to discuss these differences with your healthcare provider to understand what's happening in your specific case."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I lower my A1C quickly?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A1C reflects your average blood sugar over 2-3 months, so meaningful changes typically take at least 2-3 months to appear in test results. However, you can begin lowering your blood glucose immediately through consistent medication adherence, regular physical activity, dietary changes, stress management, and adequate sleep. Many people see significant improvements within 3 months of making comprehensive lifestyle changes. Always work with your healthcare provider on a safe plan to lower A1C."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is the conversion between A1C and average glucose?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The conversion formula (eAG = 28.7 × A1C − 46.7) is based on research from the ADAG (A1C-Derived Average Glucose) study and works well for most people. However, it's an estimate that assumes normal red blood cell lifespan. The accuracy may vary by about 15-20% for individuals, and certain conditions affecting hemoglobin (like anemia, kidney disease, or certain hemoglobin variants) can make the correlation less reliable. Your healthcare provider can help determine if the conversion is accurate for your specific situation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does stress affect A1C levels?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, stress can indirectly affect A1C levels by raising blood glucose. When you're stressed, your body releases stress hormones like cortisol and adrenaline, which can increase blood sugar levels. Prolonged stress over the 2-3 month period reflected in your A1C test can contribute to higher readings. Additionally, stress might impact your eating habits, sleep, and exercise routine, all of which affect blood sugar control. Stress management techniques like meditation, yoga, and adequate sleep can help mitigate these effects."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can diet alone lower my A1C?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, dietary changes alone can significantly lower A1C, especially in prediabetes or early type 2 diabetes. Research shows that reducing carbohydrate intake, especially refined carbs and added sugars, can help. Focus on a balanced diet rich in non-starchy vegetables, lean proteins, healthy fats, and moderate amounts of whole grains. Some studies have shown A1C reductions of 0.5-2% with dietary changes within 3-6 months. However, the effectiveness depends on your starting A1C, how consistently you follow the diet, and your individual metabolic factors."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does exercise affect A1C levels?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Regular exercise can significantly lower A1C levels by improving insulin sensitivity and helping muscles use glucose more efficiently. Both aerobic exercises (like walking or swimming) and resistance training (strength exercises) are beneficial. Studies show that consistent exercise can reduce A1C by 0.5-0.7% without any medication changes. The American Diabetes Association recommends at least 150 minutes of moderate-intensity activity per week, spread over at least 3 days with no more than 2 consecutive days without activity. Always start gradually and consult your healthcare provider before beginning a new exercise program."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does a continuous glucose monitor (CGM) relate to A1C?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Continuous Glucose Monitors (CGMs) and A1C provide complementary information about your blood sugar control. While A1C gives a 2-3 month average, CGMs show real-time glucose levels and patterns throughout the day and night. CGMs can reveal high and low spikes that A1C might miss, and they provide metrics like Time in Range (TIR), which many doctors now consider alongside A1C. Some CGM systems even estimate your current A1C based on continuous readings. Using both tools gives you and your healthcare provider the most complete picture of your glucose management."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Add Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const mgdlValue = document.getElementById('mgdlValue');
+    const mmolValue = document.getElementById('mmolValue');
+    const a1cCategory = document.getElementById('a1cCategory');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    let a1cChart = null;
+    
+    // Convert A1C to eAG
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get input
+      const a1cValue = parseFloat(document.getElementById('a1c').value);
+      
+      let isValid = true;
+      
+      // Validate input
+      if (isNaN(a1cValue) || a1cValue < 4 || a1cValue > 14) {
+        document.getElementById('a1c-error').textContent = 'Please enter a valid A1C value (4-14%)';
+        document.getElementById('a1c').classList.add('error');
+        isValid = false;
+      }
+      
+      if (isValid) {
+        // Calculate estimated average glucose (eAG)
+        // Formula: eAG (mg/dL) = (28.7 * A1C) - 46.7
+        const eAGmgdl = (28.7 * a1cValue) - 46.7;
+        
+        // Convert to mmol/L: divide mg/dL by 18
+        const eAGmmol = eAGmgdl / 18;
+        
+        // Determine category and CTA
+        let category = '';
+        let categoryClass = '';
+        let ctaText = '';
+        
+        if (a1cValue < 5.7) {
+          category = 'Normal (Non-diabetic range)';
+          categoryClass = 'category-normal';
+          ctaText = "Your A1C level is in the normal range, which is excellent! Maintaining these healthy numbers is all about consistency—something you're clearly good at already. If you're taking any daily supplements to support your metabolic health, keeping that routine strong is key.<br><br>Our pill organizer is perfect for that 'set it and forget it' approach to health maintenance. Sort your supplements just once a week into the daily compartments, and you'll never have to wonder if you remembered your vitamins that morning. It's a simple way to maintain your already-stellar health habits without adding any extra thought to your day. Keep up the great work!";
+        } else if (a1cValue < 6.5) {
+          category = 'Prediabetes range';
+          categoryClass = 'category-warning';
+          ctaText = "Your A1C is in the prediabetes range—this is actually good news because it means you have the opportunity to make changes before diabetes develops. If your doctor has recommended supplements like alpha-lipoic acid, chromium, or a specific vitamin regimen, consistency will be your best ally.<br><br>Our pill organizer takes the guesswork out of your daily routine. Fill it once a week with your recommended supplements, and it's right there reminding you each day. No more 'Did I take that today?' moments or finding half-empty bottles months later. It's a simple tool that helps you stay on track with those small daily actions that can make a big difference in your health journey.";
+        } else if (a1cValue < 7) {
+          category = 'Diabetes range (within target for many adults)';
+          categoryClass = 'category-warning';
+          ctaText = "Wow, that's amazing—all those little daily efforts over the past few months? They're clearly paying off, and you should be so proud! Keeping that A1c steady means sticking with what's working, whether that's your meds, supplements, or those smart food choices you've been nailing.<br><br>But let's be real: remembering *every single day* to take what you need? It can sneak up on you. Our pill organizer takes that pressure off. Spend 5 minutes on Sunday sorting your meds and vitamins into the daily slots, and then… done. No more digging through bottles or second-guessing if you took them. It's a tiny, easy way to keep that momentum going—so you can keep crushing those goals without the hassle. Makes consistency feel like a breeze.";
+        } else {
+          category = 'Diabetes range (above target for many adults)';
+          categoryClass = 'category-danger';
+          ctaText = "First off, noticing this is a big step—props to you for staying on top of it. This is just a sign to chat with your doc about tweaks to your plan, and whatever they suggest (new meds, adjusted supplements), sticking to it will be key.<br><br>The tricky part? Keeping track of it all. Our pill organizer is here to simplify things: 7 oversized compartments for a week's worth of wellness. No more mixing up pills or stressing about missed doses. Spend a few minutes prepping once a week, and you'll feel that much more in control. It's like having a little backup to make sure you're nailing that new plan—so you can get back to that target range. Takes the guesswork out of the process.";
+        }
+        
+        // Update the display
+        mgdlValue.textContent = eAGmgdl.toFixed(1) + ' mg/dL';
+        mmolValue.textContent = eAGmmol.toFixed(1) + ' mmol/L';
+        a1cCategory.textContent = category;
+        a1cCategory.className = 'result-category ' + categoryClass;
+        
+        // Create A1C chart
+        createA1CChart(a1cValue);
+        
+        // Update CTA
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    
+    // Create A1C chart
+    function createA1CChart(a1cValue) {
+      const ctx = document.getElementById('a1cChart').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (a1cChart) {
+        a1cChart.destroy();
+      }
+      
+      // Create dataset with ranges
+      const data = {
+        labels: ['Normal', 'Prediabetes', 'Diabetes'],
+        datasets: [
+          {
+            label: 'A1C Ranges',
+            data: [5.6, 6.4, 14],
+            backgroundColor: [
+              '#2D5F5D',  // Normal
+              '#84B7B6',  // Prediabetes
+              '#e74c3c'   // Diabetes
+            ],
+            borderColor: '#E8F3F3',
+            borderWidth: 1
+          }
+        ]
+      };
+      
+      // Create chart
+      a1cChart = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              stacked: true,
+              min: 4,
+              max: 14,
+              title: {
+                display: true,
+                text: 'A1C Value (%)',
+                color: '#333333'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const ranges = {
+                    'Normal': 'Below 5.7%',
+                    'Prediabetes': '5.7% - 6.4%',
+                    'Diabetes': '6.5% and above'
+                  };
+                  return ranges[context.label];
+                }
+              }
+            },
+            annotation: {
+              annotations: {
+                line1: {
+                  type: 'line',
+                  xMin: a1cValue,
+                  xMax: a1cValue,
+                  yMin: -0.5,
+                  yMax: 2.5,
+                  borderColor: '#333333',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  label: {
+                    content: 'Your A1C: ' + a1cValue + '%',
+                    enabled: true,
+                    position: 'top'
+                  }
+                }
+              }
+            }
+          }
+        },
+        plugins: [{
+          id: 'a1cMarker',
+          afterDraw: function(chart) {
+            const ctx = chart.ctx;
+            const xAxis = chart.scales.x;
+            const yAxis = chart.scales.y;
+            const chartArea = chart.chartArea;
+            
+            // Draw vertical line at user's A1C value
+            const xPixel = xAxis.getPixelForValue(a1cValue);
+            
+            if (xPixel >= chartArea.left && xPixel <= chartArea.right) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(xPixel, chartArea.top);
+              ctx.lineTo(xPixel, chartArea.bottom);
+              ctx.lineWidth = 2;
+              ctx.strokeStyle = '#333333';
+              ctx.setLineDash([5, 5]);
+              ctx.stroke();
+              
+              // Add label
+              ctx.fillStyle = '#333333';
+              ctx.font = 'bold 12px Arial';
+              ctx.textAlign = 'center';
+              ctx.fillText('Your A1C: ' + a1cValue + '%', xPixel, chartArea.top - 10);
+              ctx.restore();
+            }
+          }
+        }]
+      });
+    }
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>

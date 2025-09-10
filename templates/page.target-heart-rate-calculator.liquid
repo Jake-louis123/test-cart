@@ -1,0 +1,654 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">Target Heart Rate Calculator</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">Target Heart Rate Calculator</h1>
+  <p class="intro-text">Find your optimal exercise intensity zones based on your age to maximize workout benefits. Many fitness enthusiasts take pre- and post-workout supplements to enhance performance and recovery. Keep your fitness supplement routine organized with <a href="pactcase.com/products/weekly-pill-organizer">Pact Case fitness-friendly pill organizer</a>, designed to help you track daily supplements for optimal workout results.</p>
+  
+  <div class="calculator-form">
+    <div class="form-group">
+      <label for="age">Your Age</label>
+      <input type="number" id="age" placeholder="e.g., 35" min="1" max="120">
+      <span class="error-message" id="age-error"></span>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Calculate My Heart Rate Zones</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your Heart Rate Zones</h2>
+    
+    <!-- Enhanced visualization - Heart Rate Zone Chart -->
+    <div class="result-chart-container">
+      <canvas id="heartRateChart"></canvas>
+    </div>
+    
+    <div class="result-details">
+      <p><strong>Estimated Maximum Heart Rate:</strong> <span id="maxHR"></span> beats per minute</p>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <h3>Moderate Intensity Zone</h3>
+          <div class="result-value" id="moderateZone"></div>
+          <p>50-70% of maximum heart rate</p>
+          <p>Good for beginners and longer workouts</p>
+        </div>
+        
+        <div class="form-group">
+          <h3>Vigorous Intensity Zone</h3>
+          <div class="result-value" id="vigorousZone"></div>
+          <p>70-85% of maximum heart rate</p>
+          <p>Builds cardiovascular fitness and endurance</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="result-details" style="margin-top: 2rem;">
+      <h3>How to Use This Information</h3>
+      <p>Your target heart rate is a personalized guide to optimize your workouts. Monitoring your heart rate during exercise helps ensure you're working at the right intensity for your fitness goals:</p>
+      <ul>
+        <li><strong>Moderate Intensity Zone:</strong> This zone improves overall health, helps burn fat, and builds basic endurance. It's ideal for longer workouts and recovery days.</li>
+        <li><strong>Vigorous Intensity Zone:</strong> This zone increases your cardiovascular capacity and performance. It helps build endurance and is more efficient for shorter workouts.</li>
+      </ul>
+      <p>Use a heart rate monitor or check your pulse manually during exercise to stay within your target zones.</p>
+    </div>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Support Your Fitness Journey</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+          <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>What is the moderate intensity zone?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The moderate intensity zone is 50-70% of your maximum heart rate. This zone improves overall health, helps burn fat, and builds basic endurance. In this zone, your breathing quickens but you're not out of breath, you develop a light sweat after about 10 minutes of activity, and you can carry on a conversation but can't sing. Activities in this zone include brisk walking, light cycling, or recreational swimming. This zone is ideal for longer workouts, recovery days, beginners, and those with certain health conditions like high blood pressure or type 2 diabetes.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What is the vigorous intensity zone?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>The vigorous intensity zone is 70-85% of your maximum heart rate. This zone increases your cardiovascular capacity and performance, improving cardiorespiratory fitness and boosting your VO2 max (maximum oxygen uptake). In this zone, your breathing is deep and rapid, you develop a sweat after a few minutes, and you can only speak in short phrases. Activities typically include running, swimming laps, heavy cycling, or high-intensity interval training. The vigorous zone helps build endurance and is more efficient for shorter workouts, burning more calories in less time compared to moderate-intensity exercise.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How accurate is the '220 minus age' formula for maximum heart rate?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>"The '220 minus age' formula provides a simple estimate but has limitations in accuracy. Research shows it has a standard deviation of 10-12 beats per minute, meaning actual maximum heart rates can vary significantly among individuals of the same age. The formula tends to overestimate maximum heart rate for younger adults and underestimate it for older adults. Alternative formulas include Tanaka's equation (208 - 0.7 × age), which may be more accurate for adults over 40, and the Gellish formula (207 - 0.7 × age), which some studies find more precise across age groups. For highly accurate maximum heart rate determination, a supervised exercise stress test with a healthcare provider is recommended.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Do medications affect my target heart rate?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Yes, several medications can significantly affect your heart rate and thus your target heart rate zones. Beta-blockers (like metoprolol, atenolol, propranolol) used for high blood pressure, heart conditions, or anxiety can lower your resting and maximum heart rate by 20-30 beats per minute. Other medications that may affect heart rate include calcium channel blockers, antiarrhythmics, thyroid medications, and some antidepressants. If you're taking any medication that affects heart rate, the standard formulas won't be accurate for you. Instead, use the Rating of Perceived Exertion (RPE) scale (0-10) to gauge exercise intensity, or consult with your healthcare provider about appropriate target heart rates based on your specific medication and condition.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What is heart rate reserve and how is it used for training?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Heart Rate Reserve (HRR) is the difference between your maximum heart rate and resting heart rate, and it's used in the Karvonen Formula to calculate more personalized training zones. To calculate a target heart rate using HRR: Target HR = ((Max HR - Resting HR) × Intensity%) + Resting HR. For example, for someone with a max HR of 180 and resting HR of 60 training at 70% intensity: Target HR = ((180 - 60) × 0.70) + 60 = 144 bpm. The HRR method is generally considered more accurate than the basic percentage of max HR method because it accounts for individual fitness levels through resting heart rate. Fitter individuals typically have lower resting heart rates, which this formula takes into consideration.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How do I find my actual maximum heart rate?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>To determine your actual maximum heart rate rather than an estimate, several methods exist: 1) Laboratory stress test - the gold standard performed under medical supervision, 2) Field tests such as the Astrand protocol (running up a steep hill for 2-3 minutes, then sprinting the last 30 seconds while monitoring heart rate), or 3) A supervised track test (warm up, then run 800m/half-mile as fast as possible, sprinting the final 200m while monitoring your highest heart rate). Important safety notes: Always consult a doctor before attempting to reach maximum heart rate, especially if you're over 35, have been inactive, or have any health concerns. These tests should ideally be supervised by a fitness professional and should not be attempted alone or without proper screening.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does fitness level affect heart rate during exercise?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Fitness level significantly affects heart rate during exercise in several ways: 1) Higher fitness levels correlate with lower resting heart rates (sometimes 40-50 bpm in elite athletes compared to 60-80 bpm in the general population), 2) Fitter individuals reach the same workload at a lower heart rate due to increased stroke volume and cardiac efficiency, 3) Trained hearts recover faster after exertion - heart rate decreases more quickly during rest periods, 4) Fitter people often have a higher anaerobic threshold, allowing them to work at higher percentages of their maximum heart rate before fatigue sets in. These adaptations develop over time with consistent training, and heart rate metrics can be used to track improvements in cardiovascular fitness.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What are heart rate training zones and how many are there?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Heart rate training zones divide your exercise intensity into specific ranges, each with different physiological effects. While the calculator shows two basic zones (moderate and vigorous), the complete five-zone model used by many coaches and athletes is: Zone 1 (50-60% of max HR): Recovery/Very Light activity - enhances recovery and fat burning, ideal for warm-ups and cool-downs. Zone 2 (60-70%): Light aerobic - improves basic endurance and fat metabolism, good for long, steady workouts. Zone 3 (70-80%): Moderate aerobic - enhances cardiovascular system efficiency and aerobic capacity. Zone 4 (80-90%): Threshold training - increases lactate threshold and improves speed endurance. Zone 5 (90-100%): Maximum performance - develops maximum performance and speed, used for interval training. Different training programs emphasize different zones depending on your goals and fitness level.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Is it safe to exercise at maximum heart rate?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Exercising at or near maximum heart rate (90-100% of max HR) should be approached cautiously and is not recommended for everyone. For healthy, well-conditioned individuals, brief periods at near-maximal heart rates during interval training can be beneficial for improving performance. However, sustained exercise at maximum heart rate is neither safe nor productive as it can't be maintained for long and increases injury risk. Those with cardiovascular conditions, high blood pressure, or who are new to exercise should avoid high-intensity zones without medical clearance. Even among athletes, time spent near maximum heart rate is typically limited to short intervals (30 seconds to 2 minutes) with adequate recovery periods. Always progress gradually toward higher intensities and consult healthcare providers before attempting high-intensity training.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does my heart rate during sleep relate to my fitness?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Your heart rate during sleep offers valuable insights into your cardiovascular health and fitness level. A lower sleeping heart rate (typically 40-60 bpm for athletic individuals versus 60-70 bpm for average adults) generally indicates better cardiovascular fitness and efficient heart function. Night-to-night consistency is also important - highly variable sleeping heart rates may indicate overtraining, inadequate recovery, or potential health issues. Additionally, heart rate variability (HRV) during sleep - the variation in time between heartbeats - is increasingly used as a fitness metric. Higher HRV generally indicates better fitness and recovery status. Many wearable devices now track these metrics, allowing you to monitor trends over time and observe how training, lifestyle factors, and recovery strategies affect your cardiovascular system.</p>
+  </div>
+</div>
+</div>
+</div>
+  
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/daily-calorie-calculator">Daily Calorie Calculator</a>
+        <p>Find out how many calories you need each day based on your activity level and goals.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/blood-pressure-checker">Blood Pressure Checker</a>
+        <p>Check your blood pressure readings against standard categories to understand your heart health status.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/a1c-converter">A1c - eAG Converter</a>
+        <p>Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/bmi-calculator">BMI Calculator</a>
+        <p>Calculate your Body Mass Index to check if your weight is in a healthy range.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/pregnancy-due-date-calculator">Pregnancy Due Date Calculator</a>
+        <p>Estimate your baby's due date and track your current pregnancy progress.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/target-heart-rate-calculator#webpage",
+      "url": "https://pactcase.com/pages/target-heart-rate-calculator",
+      "name": "Target Heart Rate Calculator | Exercise Zone Tool | Pact Case",
+      "description": "Find your optimal exercise intensity zones based on your age to maximize workout benefits with our free calculator.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/target-heart-rate-calculator#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/target-heart-rate-calculator"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/target-heart-rate-calculator#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Target Heart Rate Calculator"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/target-heart-rate-calculator#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "Target Heart Rate Calculator",
+        "description": "Calculate your optimal heart rate zones for different exercise intensities based on your age",
+        "url": "https://pactcase.com/pages/target-heart-rate-calculator",
+        "about": [
+          {
+            "@type": "MedicalProcedure",
+            "name": "Heart Rate Zone Calculation"
+          },
+          {
+            "@type": "MedicalTherapy",
+            "name": "Exercise Prescription"
+          }
+        ],
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Sports Medicine"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the moderate intensity zone?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The moderate intensity zone is 50-70% of your maximum heart rate. This zone improves overall health, helps burn fat, and builds basic endurance. In this zone, your breathing quickens but you're not out of breath, you develop a light sweat after about 10 minutes of activity, and you can carry on a conversation but can't sing. Activities in this zone include brisk walking, light cycling, or recreational swimming. This zone is ideal for longer workouts, recovery days, beginners, and those with certain health conditions like high blood pressure or type 2 diabetes."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the vigorous intensity zone?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The vigorous intensity zone is 70-85% of your maximum heart rate. This zone increases your cardiovascular capacity and performance, improving cardiorespiratory fitness and boosting your VO2 max (maximum oxygen uptake). In this zone, your breathing is deep and rapid, you develop a sweat after a few minutes, and you can only speak in short phrases. Activities typically include running, swimming laps, heavy cycling, or high-intensity interval training. The vigorous zone helps build endurance and is more efficient for shorter workouts, burning more calories in less time compared to moderate-intensity exercise."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is the '220 minus age' formula for maximum heart rate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The '220 minus age' formula provides a simple estimate but has limitations in accuracy. Research shows it has a standard deviation of 10-12 beats per minute, meaning actual maximum heart rates can vary significantly among individuals of the same age. The formula tends to overestimate maximum heart rate for younger adults and underestimate it for older adults. Alternative formulas include Tanaka's equation (208 - 0.7 × age), which may be more accurate for adults over 40, and the Gellish formula (207 - 0.7 × age), which some studies find more precise across age groups. For highly accurate maximum heart rate determination, a supervised exercise stress test with a healthcare provider is recommended."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do medications affect my target heart rate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, several medications can significantly affect your heart rate and thus your target heart rate zones. Beta-blockers (like metoprolol, atenolol, propranolol) used for high blood pressure, heart conditions, or anxiety can lower your resting and maximum heart rate by 20-30 beats per minute. Other medications that may affect heart rate include calcium channel blockers, antiarrhythmics, thyroid medications, and some antidepressants. If you're taking any medication that affects heart rate, the standard formulas won't be accurate for you. Instead, use the Rating of Perceived Exertion (RPE) scale (0-10) to gauge exercise intensity, or consult with your healthcare provider about appropriate target heart rates based on your specific medication and condition."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is heart rate reserve and how is it used for training?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Heart Rate Reserve (HRR) is the difference between your maximum heart rate and resting heart rate, and it's used in the Karvonen Formula to calculate more personalized training zones. To calculate a target heart rate using HRR: Target HR = ((Max HR - Resting HR) × Intensity%) + Resting HR. For example, for someone with a max HR of 180 and resting HR of 60 training at 70% intensity: Target HR = ((180 - 60) × 0.70) + 60 = 144 bpm. The HRR method is generally considered more accurate than the basic percentage of max HR method because it accounts for individual fitness levels through resting heart rate. Fitter individuals typically have lower resting heart rates, which this formula takes into consideration."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I find my actual maximum heart rate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "To determine your actual maximum heart rate rather than an estimate, several methods exist: 1) Laboratory stress test - the gold standard performed under medical supervision, 2) Field tests such as the Astrand protocol (running up a steep hill for 2-3 minutes, then sprinting the last 30 seconds while monitoring heart rate), or 3) A supervised track test (warm up, then run 800m/half-mile as fast as possible, sprinting the final 200m while monitoring your highest heart rate). Important safety notes: Always consult a doctor before attempting to reach maximum heart rate, especially if you're over 35, have been inactive, or have any health concerns. These tests should ideally be supervised by a fitness professional and should not be attempted alone or without proper screening."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does fitness level affect heart rate during exercise?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Fitness level significantly affects heart rate during exercise in several ways: 1) Higher fitness levels correlate with lower resting heart rates (sometimes 40-50 bpm in elite athletes compared to 60-80 bpm in the general population), 2) Fitter individuals reach the same workload at a lower heart rate due to increased stroke volume and cardiac efficiency, 3) Trained hearts recover faster after exertion - heart rate decreases more quickly during rest periods, 4) Fitter people often have a higher anaerobic threshold, allowing them to work at higher percentages of their maximum heart rate before fatigue sets in. These adaptations develop over time with consistent training, and heart rate metrics can be used to track improvements in cardiovascular fitness."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are heart rate training zones and how many are there?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Heart rate training zones divide your exercise intensity into specific ranges, each with different physiological effects. While the calculator shows two basic zones (moderate and vigorous), the complete five-zone model used by many coaches and athletes is: Zone 1 (50-60% of max HR): Recovery/Very Light activity - enhances recovery and fat burning, ideal for warm-ups and cool-downs. Zone 2 (60-70%): Light aerobic - improves basic endurance and fat metabolism, good for long, steady workouts. Zone 3 (70-80%): Moderate aerobic - enhances cardiovascular system efficiency and aerobic capacity. Zone 4 (80-90%): Threshold training - increases lactate threshold and improves speed endurance. Zone 5 (90-100%): Maximum performance - develops maximum performance and speed, used for interval training. Different training programs emphasize different zones depending on your goals and fitness level."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is it safe to exercise at maximum heart rate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Exercising at or near maximum heart rate (90-100% of max HR) should be approached cautiously and is not recommended for everyone. For healthy, well-conditioned individuals, brief periods at near-maximal heart rates during interval training can be beneficial for improving performance. However, sustained exercise at maximum heart rate is neither safe nor productive as it can't be maintained for long and increases injury risk. Those with cardiovascular conditions, high blood pressure, or who are new to exercise should avoid high-intensity zones without medical clearance. Even among athletes, time spent near maximum heart rate is typically limited to short intervals (30 seconds to 2 minutes) with adequate recovery periods. Always progress gradually toward higher intensities and consult healthcare providers before attempting high-intensity training."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does my heart rate during sleep relate to my fitness?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your heart rate during sleep offers valuable insights into your cardiovascular health and fitness level. A lower sleeping heart rate (typically 40-60 bpm for athletic individuals versus 60-70 bpm for average adults) generally indicates better cardiovascular fitness and efficient heart function. Night-to-night consistency is also important - highly variable sleeping heart rates may indicate overtraining, inadequate recovery, or potential health issues. Additionally, heart rate variability (HRV) during sleep - the variation in time between heartbeats - is increasingly used as a fitness metric. Higher HRV generally indicates better fitness and recovery status. Many wearable devices now track these metrics, allowing you to monitor trends over time and observe how training, lifestyle factors, and recovery strategies affect your cardiovascular system."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Add Chart.js for visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const maxHR = document.getElementById('maxHR');
+    const moderateZone = document.getElementById('moderateZone');
+    const vigorousZone = document.getElementById('vigorousZone');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    let heartRateChart = null;
+    
+    // Calculate target heart rate
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get input
+      const age = parseInt(document.getElementById('age').value);
+      
+      let isValid = true;
+      
+      // Validate input
+      if (isNaN(age) || age < 1 || age > 120) {
+        document.getElementById('age-error').textContent = 'Please enter a valid age (1-120)';
+        document.getElementById('age').classList.add('error');
+        isValid = false;
+      }
+      
+      if (isValid) {
+        // Calculate estimated maximum heart rate
+        // Formula: MHR = 220 - age
+        const maxHeartRate = 220 - age;
+        
+        // Calculate moderate intensity zone (50-70% of MHR)
+        const moderateLower = Math.round(maxHeartRate * 0.5);
+        const moderateUpper = Math.round(maxHeartRate * 0.7);
+        
+        // Calculate vigorous intensity zone (70-85% of MHR)
+        const vigorousLower = Math.round(maxHeartRate * 0.7);
+        const vigorousUpper = Math.round(maxHeartRate * 0.85);
+        
+        // Update the display
+        maxHR.textContent = maxHeartRate;
+        moderateZone.textContent = `${moderateLower} - ${moderateUpper} bpm`;
+        vigorousZone.textContent = `${vigorousLower} - ${vigorousUpper} bpm`;
+        
+        // Create heart rate zone chart
+        createHeartRateChart(maxHeartRate, moderateLower, moderateUpper, vigorousLower, vigorousUpper);
+        
+        // Set CTA text
+        const ctaText = "Great job nailing down your target heart rate zone—that's the first step to making every workout count! Now, to keep that momentum going and help your body recover like a pro, you're probably reaching for supplements: electrolytes to stay hydrated, BCAAs to support those muscles, or CoQ10 for that extra energy boost. Makes total sense—but let's be real, remembering *when* to take what? It can get messy.<br><br>Our pill organizer takes the guesswork out. Sort your pre-workout energizers, mid-day vitamins, and evening recovery supplements into clearly labeled compartments once a week, and suddenly you're not digging through bottles mid-rush or forgetting that crucial post-workout protein. It's a small change that keeps your supplement game as disciplined as your fitness routine. Because when you're putting in the work, you deserve to get all the benefits.";
+        
+        // Update CTA
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    
+    // Create heart rate zone chart
+    function createHeartRateChart(maxHR, modLower, modUpper, vigLower, vigUpper) {
+      const ctx = document.getElementById('heartRateChart').getContext('2d');
+      
+      // Destroy previous chart if exists
+      if (heartRateChart) {
+        heartRateChart.destroy();
+      }
+      
+      // Calculate segments for chart
+      const restingSegment = modLower;
+      const moderateSegment = modUpper - modLower;
+      const vigorousSegment = vigUpper - vigLower;
+      const maxSegment = maxHR - vigUpper;
+      
+      heartRateChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Heart Rate Zones'],
+          datasets: [
+            {
+              label: 'Resting (<50%)',
+              data: [restingSegment],
+              backgroundColor: '#E8F3F3',
+              borderColor: '#84B7B6',
+              borderWidth: 1
+            },
+            {
+              label: 'Moderate (50-70%)',
+              data: [moderateSegment],
+              backgroundColor: '#84B7B6',
+              borderColor: '#84B7B6',
+              borderWidth: 1
+            },
+            {
+              label: 'Vigorous (70-85%)',
+              data: [vigorousSegment],
+              backgroundColor: '#2D5F5D',
+              borderColor: '#2D5F5D',
+              borderWidth: 1
+            },
+            {
+              label: 'Maximum (>85%)',
+              data: [maxSegment],
+              backgroundColor: '#50817F',
+              borderColor: '#50817F',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              stacked: true,
+              min: 0,
+              max: maxHR + 10,
+              title: {
+                display: true,
+                text: 'Heart Rate (BPM)',
+                color: '#333333'
+              },
+              ticks: {
+                callback: function(value) {
+                  return value + ' bpm';
+                }
+              }
+            },
+            y: {
+              stacked: true,
+              grid: {
+                display: false
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const zones = {
+                    'Resting (<50%)': `0-${modLower} bpm`,
+                    'Moderate (50-70%)': `${modLower}-${modUpper} bpm`,
+                    'Vigorous (70-85%)': `${vigLower}-${vigUpper} bpm`,
+                    'Maximum (>85%)': `${vigUpper}-${maxHR} bpm`
+                  };
+                  return zones[context.dataset.label];
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>

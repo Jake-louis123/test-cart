@@ -1,0 +1,654 @@
+{% layout 'theme.liquid' %}
+{{ 'health-calculators.css' | asset_url | stylesheet_tag }}
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+  <a href="https://pactcase.com">Home</a><span class="separator">&gt;</span><span class="current">BMI Calculator</span>
+</div>
+
+<div class="calculator-container">
+  <h1 class="calculator-title">BMI Calculator</h1>
+  <p class="intro-text">Calculate your Body Mass Index (BMI) to understand if your weight falls within a healthy range. Maintaining a healthy weight often involves consistent vitamin and supplement routines, which <a href="pactcase.com/products/weekly-pill-organizer">Pact Case moisture proof pill organizer</a> can help you manage effectively by ensuring you never miss your daily supplements.</p>
+  
+  <div class="calculator-form">
+    <div class="form-group">
+      <div class="radio-group" id="unitSelector">
+        <label>
+          <input type="radio" name="units" value="metric" checked>
+          Metric (kg, cm)
+        </label>
+        <label>
+          <input type="radio" name="units" value="imperial">
+          Imperial (lbs, ft, in)
+        </label>
+      </div>
+    </div>
+    
+    <div id="metricInputs">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="height-cm">Height (cm)</label>
+          <input type="number" id="height-cm" placeholder="e.g., 170" min="1" max="300">
+          <span class="error-message" id="height-cm-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label for="weight-kg">Weight (kg)</label>
+          <input type="number" id="weight-kg" placeholder="e.g., 70" min="1" max="500" step="0.1">
+          <span class="error-message" id="weight-kg-error"></span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="imperialInputs" style="display: none;">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="height-ft">Height (ft)</label>
+          <input type="number" id="height-ft" placeholder="e.g., 5" min="1" max="9">
+          <span class="error-message" id="height-ft-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label for="height-in">Height (in)</label>
+          <input type="number" id="height-in" placeholder="e.g., 10" min="0" max="11">
+          <span class="error-message" id="height-in-error"></span>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="weight-lbs">Weight (lbs)</label>
+        <input type="number" id="weight-lbs" placeholder="e.g., 154" min="1" max="1000" step="0.1">
+        <span class="error-message" id="weight-lbs-error"></span>
+      </div>
+    </div>
+    
+    <button type="button" id="calculateButton" class="btn-primary">Calculate My BMI</button>
+  </div>
+  
+  <div class="result-container" id="resultContainer">
+    <h2>Your BMI Result</h2>
+    
+    <!-- Enhanced visualization - BMI Gauge -->
+    <div class="bmi-gauge">
+      <div class="bmi-gauge-semicircle"></div>
+      <div class="bmi-gauge-needle" id="bmiNeedle"></div>
+    </div>
+    <div class="bmi-gauge-labels">
+      <span>15</span>
+      <span>20</span>
+      <span>25</span>
+      <span>30</span>
+      <span>40</span>
+    </div>
+    
+    <div class="result-value" id="bmiValue"></div>
+    <div class="result-category" id="bmiCategory"></div>
+    
+    <div class="result-details">
+      <p><strong>BMI Categories:</strong></p>
+      <ul>
+        <li><strong>Below 18.5:</strong> Underweight</li>
+        <li><strong>18.5 - 24.9:</strong> Normal Weight</li>
+        <li><strong>25.0 - 29.9:</strong> Overweight</li>
+        <li><strong>30.0 and Above:</strong> Obese</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div id="ctaContainer" style="display: none;">
+    <h3>Your Health Journey</h3>
+    <div id="dynamicCta"></div>
+    <p><a href="pactcase.com/products/weekly-pill-organizer">Get Your Weekly Pill & Supplement Organizers for Your Tiny Win, Every Day</a></p>
+  </div>
+  </div>
+
+        <!-- 在这里添加FAQ部分 - 放在相关计算器部分之前 -->
+<div class="faq-section">
+  <h3 class="faq-section-title">Frequently asked questions</h3>
+  <div class="faq-container">
+    <div class="faq-item">
+  <div class="faq-question">
+    <h4>What are the BMI categories?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Standard BMI categories for adults are: Below 18.5: Underweight, 18.5-24.9: Normal Weight, 25.0-29.9: Overweight, 30.0-34.9: Obesity Class I, 35.0-39.9: Obesity Class II, 40.0 and above: Obesity Class III (sometimes called severe or morbid obesity). These categories apply to adults 20 years and older and are the same for men and women.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Is BMI accurate for everyone?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>BMI has significant limitations and isn't accurate for everyone. It doesn't distinguish between muscle and fat, potentially misclassifying muscular athletes as overweight or obese. It's less accurate for elderly people who have lost muscle mass, very short people, pregnant women, and certain ethnic groups like Asian populations who may have higher health risks at lower BMI values. BMI also doesn't consider where fat is distributed, which is important since abdominal fat carries more health risks than fat in other areas.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How is BMI different for children and teens?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>BMI for children and teens (ages 2-19) is calculated the same way as adults, but the interpretation is different. Instead of fixed categories, children's BMI is interpreted using age and sex-specific percentiles. For example, a BMI at the 85th percentile means the child has a higher BMI than 85% of children of the same age and sex. Categories are: Below 5th percentile: Underweight, 5th to 85th percentile: Healthy weight, 85th to 95th percentile: Overweight, Above 95th percentile: Obese. This accounts for normal growth patterns and differences between boys and girls.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What are better alternatives to BMI?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Several measurements provide better health insights than BMI alone: 1) Waist circumference (men >40 inches or women >35 inches indicates higher risk), 2) Waist-to-hip ratio (men >0.9 or women >0.85 indicates central obesity), 3) Body fat percentage measurement via DEXA scans, bioelectrical impedance, or skinfold calipers, 4) Relative fat mass (RFM), which uses height and waist circumference, and 5) Body adiposity index (BAI), which uses height and hip circumference. The most comprehensive assessment combines multiple measurements along with blood work to evaluate metabolic health.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Can you be healthy with an 'overweight' BMI?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>Yes, research shows that some people with overweight BMI classifications (25-29.9) can be metabolically healthy. The concept of 'metabolically healthy obesity' refers to individuals who have higher BMIs but normal blood pressure, cholesterol, blood sugar, and inflammatory markers. Studies suggest that fitness level may be more important than weight in predicting health outcomes, and some research even shows that being slightly overweight correlates with lower mortality in certain populations. However, severe obesity (BMI ≥35) generally carries increased health risks regardless of metabolic status.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>What is a healthy weight loss goal based on BMI?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>A healthy weight loss goal typically aims for a reduction of 5-10% of body weight over 3-6 months, rather than targeting a specific BMI. This modest weight loss has been shown to significantly improve health markers like blood pressure, cholesterol, and blood sugar. A sustainable rate is 1-2 pounds (0.5-1 kg) per week, achieved through a daily calorie deficit of 500-1000 calories. It's best to focus on sustainable lifestyle changes rather than rapid weight loss. For those with BMIs over 35, or over 30 with obesity-related conditions, more aggressive approaches may be appropriate under medical supervision.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Why does BMI increase with age, even without weight gain?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>BMI often increases with age even without weight gain because of changes in body composition. As we age, we naturally lose muscle mass (sarcopenia) and gain fat mass, particularly after age 30. Since muscle is denser than fat, this shift in composition can keep weight stable while body volume increases, leading to a higher BMI. Additionally, many people experience a decrease in height with age due to compression of vertebral discs and postural changes, which can increase BMI since it's calculated using height. This is one reason why BMI can be less accurate for older adults.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How does BMI relate to disease risk?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>BMI correlates with several disease risks in a J-shaped curve, with both very low and high BMIs associated with increased health risks. Higher BMIs (over 30) are linked to increased risk of heart disease, stroke, type 2 diabetes, certain cancers, sleep apnea, osteoarthritis, and fatty liver disease. However, the relationship is complex and influenced by factors like fat distribution, fitness level, and ethnicity. For example, Asians tend to develop risks at lower BMI levels, while some African populations may have fewer risks at higher BMIs. When assessing health risk, BMI should be considered alongside other factors like waist circumference and metabolic health markers.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>Does BMI account for bone density or frame size?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>No, BMI doesn't account for bone density or frame size, which is another limitation of this measurement. People with denser, heavier bones or larger frames may have higher BMIs without excess fat tissue. Bone mass typically accounts for 15% of total body weight but varies by individual. Some research suggests using wrist circumference in relation to height to determine frame size (small, medium, or large), which can help contextualize BMI readings. For those with notably small or large frames, doctors sometimes adjust BMI interpretations, though no official adjustment formula exists in clinical practice.</p>
+  </div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-question">
+    <h4>How was BMI developed and why is it still used?</h4>
+    <span class="faq-toggle">+</span>
+  </div>
+  <div class="faq-answer">
+    <p>BMI was developed in the 1830s by Belgian mathematician Adolphe Quetelet as a simple way to classify people's body sizes for population studies, not for individual health assessment. It became widely adopted in the 1970s when insurance companies used it to determine policy rates, and the WHO later established it as a standard measure. Despite its limitations, BMI remains widely used because it's: 1) Simple to calculate without specialized equipment, 2) Inexpensive to implement in large populations, 3) Strongly correlated with body fat percentage at population levels, and 4) Associated with health outcomes in large epidemiological studies. Healthcare is gradually moving toward more comprehensive assessments, but BMI persists due to its simplicity and established database of research.</p>
+  </div>
+</div>
+</div>
+</div>
+  
+  <!-- Related Calculators section -->
+  <div class="related-calculators">
+    <h3>Free Health Calculators</h3>
+    <div class="related-calculators-list">
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/daily-calorie-calculator">Daily Calorie Calculator</a>
+        <p>Find out how many calories you need each day based on your activity level and goals.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/target-heart-rate-calculator">Target Heart Rate Calculator</a>
+        <p>Find your optimal exercise intensity zones to maximize workout benefits.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/blood-pressure-checker">Blood Pressure Checker</a>
+        <p>Check your blood pressure readings against standard categories to understand your heart health status.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/a1c-converter">A1c - eAG Converter</a>
+        <p>Convert your A1C percentage to estimated average glucose levels in both mg/dL and mmol/L.</p>
+      </div>
+      <div class="related-calculator-card">
+        <a href="https://pactcase.com/pages/pregnancy-due-date-calculator">Pregnancy Due Date Calculator</a>
+        <p>Estimate your baby's due date and track your current pregnancy progress.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="disclaimer">
+    <strong>Medical Disclaimer:</strong> This tool is for informational purposes only and does not constitute medical advice. The calculations are based on standard formulas and public health guidelines but may not apply to your individual health situation. Always consult with a qualified healthcare professional for any health concerns or before making any decisions related to your health or treatment. Do not disregard or delay seeking professional medical advice because of something you have read on this website.
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://pactcase.com/pages/bmi-calculator#webpage",
+      "url": "https://pactcase.com/pages/bmi-calculator",
+      "name": "BMI Calculator | Body Mass Index Tool | Pact Case",
+      "description": "Calculate your Body Mass Index (BMI) to understand if your weight falls within a healthy range with our free calculator.",
+      "isPartOf": {
+        "@id": "https://pactcase.com/#website"
+      },
+      "breadcrumb": {
+        "@id": "https://pactcase.com/pages/bmi-calculator#breadcrumb"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": [
+        {
+          "@type": "ReadAction",
+          "target": ["https://pactcase.com/pages/bmi-calculator"]
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://pactcase.com/pages/bmi-calculator#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://pactcase.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "BMI Calculator"
+        }
+      ]
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://pactcase.com/pages/bmi-calculator#medicalwebpage",
+      "mainEntity": {
+        "@type": "MedicalCalculator",
+        "name": "BMI Calculator",
+        "description": "Calculate your Body Mass Index using both metric and imperial measurements",
+        "url": "https://pactcase.com/pages/bmi-calculator",
+        "about": {
+          "@type": "MedicalProcedure",
+          "name": "Body Mass Index Measurement",
+          "howPerformed": "Mathematical calculation using height and weight"
+        },
+        "medicineSystem": "Conventional Medicine",
+        "relevantSpecialty": "Nutrition"
+      }
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What are the BMI categories?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Standard BMI categories for adults are: Below 18.5: Underweight, 18.5-24.9: Normal Weight, 25.0-29.9: Overweight, 30.0-34.9: Obesity Class I, 35.0-39.9: Obesity Class II, 40.0 and above: Obesity Class III (sometimes called severe or morbid obesity). These categories apply to adults 20 years and older and are the same for men and women."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is BMI accurate for everyone?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BMI has significant limitations and isn't accurate for everyone. It doesn't distinguish between muscle and fat, potentially misclassifying muscular athletes as overweight or obese. It's less accurate for elderly people who have lost muscle mass, very short people, pregnant women, and certain ethnic groups like Asian populations who may have higher health risks at lower BMI values. BMI also doesn't consider where fat is distributed, which is important since abdominal fat carries more health risks than fat in other areas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How is BMI different for children and teens?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BMI for children and teens (ages 2-19) is calculated the same way as adults, but the interpretation is different. Instead of fixed categories, children's BMI is interpreted using age and sex-specific percentiles. For example, a BMI at the 85th percentile means the child has a higher BMI than 85% of children of the same age and sex. Categories are: Below 5th percentile: Underweight, 5th to 85th percentile: Healthy weight, 85th to 95th percentile: Overweight, Above 95th percentile: Obese. This accounts for normal growth patterns and differences between boys and girls."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are better alternatives to BMI?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Several measurements provide better health insights than BMI alone: 1) Waist circumference (men >40 inches or women >35 inches indicates higher risk), 2) Waist-to-hip ratio (men >0.9 or women >0.85 indicates central obesity), 3) Body fat percentage measurement via DEXA scans, bioelectrical impedance, or skinfold calipers, 4) Relative fat mass (RFM), which uses height and waist circumference, and 5) Body adiposity index (BAI), which uses height and hip circumference. The most comprehensive assessment combines multiple measurements along with blood work to evaluate metabolic health."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can you be healthy with an 'overweight' BMI?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, research shows that some people with overweight BMI classifications (25-29.9) can be metabolically healthy. The concept of 'metabolically healthy obesity' refers to individuals who have higher BMIs but normal blood pressure, cholesterol, blood sugar, and inflammatory markers. Studies suggest that fitness level may be more important than weight in predicting health outcomes, and some research even shows that being slightly overweight correlates with lower mortality in certain populations. However, severe obesity (BMI ≥35) generally carries increased health risks regardless of metabolic status."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a healthy weight loss goal based on BMI?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A healthy weight loss goal typically aims for a reduction of 5-10% of body weight over 3-6 months, rather than targeting a specific BMI. This modest weight loss has been shown to significantly improve health markers like blood pressure, cholesterol, and blood sugar. A sustainable rate is 1-2 pounds (0.5-1 kg) per week, achieved through a daily calorie deficit of 500-1000 calories. It's best to focus on sustainable lifestyle changes rather than rapid weight loss. For those with BMIs over 35, or over 30 with obesity-related conditions, more aggressive approaches may be appropriate under medical supervision."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does BMI increase with age, even without weight gain?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BMI often increases with age even without weight gain because of changes in body composition. As we age, we naturally lose muscle mass (sarcopenia) and gain fat mass, particularly after age 30. Since muscle is denser than fat, this shift in composition can keep weight stable while body volume increases, leading to a higher BMI. Additionally, many people experience a decrease in height with age due to compression of vertebral discs and postural changes, which can increase BMI since it's calculated using height. This is one reason why BMI can be less accurate for older adults."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does BMI relate to disease risk?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BMI correlates with several disease risks in a J-shaped curve, with both very low and high BMIs associated with increased health risks. Higher BMIs (over 30) are linked to increased risk of heart disease, stroke, type 2 diabetes, certain cancers, sleep apnea, osteoarthritis, and fatty liver disease. However, the relationship is complex and influenced by factors like fat distribution, fitness level, and ethnicity. For example, Asians tend to develop risks at lower BMI levels, while some African populations may have fewer risks at higher BMIs. When assessing health risk, BMI should be considered alongside other factors like waist circumference and metabolic health markers."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does BMI account for bone density or frame size?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No, BMI doesn't account for bone density or frame size, which is another limitation of this measurement. People with denser, heavier bones or larger frames may have higher BMIs without excess fat tissue. Bone mass typically accounts for 15% of total body weight but varies by individual. Some research suggests using wrist circumference in relation to height to determine frame size (small, medium, or large), which can help contextualize BMI readings. For those with notably small or large frames, doctors sometimes adjust BMI interpretations, though no official adjustment formula exists in clinical practice."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How was BMI developed and why is it still used?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "BMI was developed in the 1830s by Belgian mathematician Adolphe Quetelet as a simple way to classify people's body sizes for population studies, not for individual health assessment. It became widely adopted in the 1970s when insurance companies used it to determine policy rates, and the WHO later established it as a standard measure. Despite its limitations, BMI remains widely used because it's: 1) Simple to calculate without specialized equipment, 2) Inexpensive to implement in large populations, 3) Strongly correlated with body fat percentage at population levels, and 4) Associated with health outcomes in large epidemiological studies. Healthcare is gradually moving toward more comprehensive assessments, but BMI persists due to its simplicity and established database of research."
+      }
+    }
+  ]
+}
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const unitSelector = document.getElementById('unitSelector');
+    const metricInputs = document.getElementById('metricInputs');
+    const imperialInputs = document.getElementById('imperialInputs');
+    const calculateButton = document.getElementById('calculateButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const ctaContainer = document.getElementById('ctaContainer');
+    const bmiValue = document.getElementById('bmiValue');
+    const bmiCategory = document.getElementById('bmiCategory');
+    const bmiNeedle = document.getElementById('bmiNeedle');
+    const dynamicCta = document.getElementById('dynamicCta');
+    
+    // Handle unit switching
+    unitSelector.addEventListener('change', function(e) {
+      if (e.target.value === 'metric') {
+        metricInputs.style.display = 'block';
+        imperialInputs.style.display = 'none';
+      } else if (e.target.value === 'imperial') {
+        metricInputs.style.display = 'none';
+        imperialInputs.style.display = 'block';
+      }
+    });
+    
+    // Calculate BMI
+    calculateButton.addEventListener('click', function() {
+      // Reset previous errors
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+      document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+      
+      // Get selected unit
+      const selectedUnit = document.querySelector('input[name="units"]:checked').value;
+      
+      let bmi = 0;
+      let isValid = true;
+      
+      if (selectedUnit === 'metric') {
+        const heightCm = parseFloat(document.getElementById('height-cm').value);
+        const weightKg = parseFloat(document.getElementById('weight-kg').value);
+        
+        // Validate inputs
+        if (isNaN(heightCm) || heightCm <= 0) {
+          document.getElementById('height-cm-error').textContent = 'Please enter a valid height';
+          document.getElementById('height-cm').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isNaN(weightKg) || weightKg <= 0) {
+          document.getElementById('weight-kg-error').textContent = 'Please enter a valid weight';
+          document.getElementById('weight-kg').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isValid) {
+          // Convert height to meters
+          const heightM = heightCm / 100;
+          // Calculate BMI: weight (kg) / height^2 (m)
+          bmi = weightKg / (heightM * heightM);
+        }
+      } else {
+        const heightFt = parseFloat(document.getElementById('height-ft').value);
+        const heightIn = parseFloat(document.getElementById('height-in').value || 0);
+        const weightLbs = parseFloat(document.getElementById('weight-lbs').value);
+        
+        // Validate inputs
+        if (isNaN(heightFt) || heightFt <= 0) {
+          document.getElementById('height-ft-error').textContent = 'Please enter a valid height';
+          document.getElementById('height-ft').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isNaN(heightIn) || heightIn < 0 || heightIn >= 12) {
+          document.getElementById('height-in-error').textContent = 'Please enter a valid value (0-11)';
+          document.getElementById('height-in').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isNaN(weightLbs) || weightLbs <= 0) {
+          document.getElementById('weight-lbs-error').textContent = 'Please enter a valid weight';
+          document.getElementById('weight-lbs').classList.add('error');
+          isValid = false;
+        }
+        
+        if (isValid) {
+          // Convert height to inches
+          const totalInches = (heightFt * 12) + heightIn;
+          // Calculate BMI: (weight (lbs) / height^2 (in)) * 703
+          bmi = (weightLbs / (totalInches * totalInches)) * 703;
+        }
+      }
+      
+      if (isValid) {
+        // Display the BMI result
+        bmiValue.textContent = bmi.toFixed(1);
+        
+        // Set category and color
+        let category = '';
+        let categoryClass = '';
+        let needleRotation = 0;
+        let ctaText = '';
+        
+        // Calculate needle rotation (from -90 to +90 degrees)
+        // BMI range typically from 15 to 40 for visualization
+        needleRotation = ((bmi - 15) / 25) * 180 - 90;
+        if (needleRotation < -90) needleRotation = -90;
+        if (needleRotation > 90) needleRotation = 90;
+        
+        if (bmi < 18.5) {
+          category = 'Underweight';
+          categoryClass = 'category-info';
+          ctaText = "No need to stress—this is the perfect time to start nurturing your body back to a more comfortable weight! When you're on the lighter side, it's not just about eating more; it's about getting the right nutrients—like protein powders or B vitamins your doctor might suggest—to help you feel stronger.<br><br>We've all been there: rushing out the door and realizing you skipped your supplements… again. Our pill organizer takes the hassle out of it. Fill it up once a week, tuck it in your bag or leave it by your coffee mug, and those little reminders will be hard to miss. It's one less thing to worry about, so you can focus on fueling your body right. You've got this—take it step by step.";
+        } else if (bmi < 25) {
+          category = 'Normal Weight';
+          categoryClass = 'category-normal';
+          ctaText = "Fantastic job keeping your weight in a healthy range—that's no small feat, and you should be proud! To keep that momentum going, getting all your daily vitamins and minerals is key. Let's be real, though—who hasn't forgotten to take their supplements in the rush of the day?<br><br>Our pill organizer is here to make it effortless. Pop your daily supplements into the labeled compartments (1, 2, 3) once a week, and you'll never second-guess if you took them. It's like a little daily reminder that you're nailing this whole health thing. Keep up the great work, and let this tiny tool make your routine even smoother.";
+        } else if (bmi < 30) {
+          category = 'Overweight';
+          categoryClass = 'category-warning';
+          ctaText = "You're already taking a great first step by checking in—props to you! When you're looking to shed a few pounds, it's easy to accidentally skimp on key nutrients. Think fiber to keep you full, vitamin C for energy, or calcium to support your metabolism—your doctor might mention these.<br><br>Let's be honest: remembering to take supplements daily? Tricky. Our pill organizer simplifies it. Divvy up your daily doses into 1/2/3 slots, and it'll sit there, quietly reminding you. No more 'Did I take that today?' stress. Just one small tool to help you stay on track, so you can focus on balanced meals and moving your body. You've got this—take it slow.";
+        } else {
+          category = 'Obese';
+          categoryClass = 'category-danger';
+          ctaText = "Kudos to you for taking this step—that's courage, and it matters. When working toward a healthier weight, your body might need extra support: things like omega-3s for metabolism, vitamin D for energy, or magnesium to keep things balanced—your doctor may suggest these.<br><br>We get it: life gets busy, and supplements often fall through the cracks. 'Did I take that this morning?' It's a common hassle. Our pill organizer fixes that. Fill it once a week, with clear labels for each day and meal, and it becomes a gentle nudge instead of a chore. No more guilt, no more confusion—just one less thing to think about. You're on the right path, and this little tool is here to walk beside you.";
+        }
+        
+        bmiCategory.textContent = category;
+        bmiCategory.className = 'result-category ' + categoryClass;
+        bmiNeedle.style.transform = `rotate(${needleRotation}deg)`;
+        
+        // Display CTA based on result
+        dynamicCta.innerHTML = ctaText;
+        
+        // Show results
+        resultContainer.classList.add('show');
+        ctaContainer.style.display = 'block';
+        
+        // Scroll to results
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  });
+</script>
+
+<!-- 添加FAQ所需的CSS -->
+<style>
+  .faq-section {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px; /* 匹配计算器容器的最大宽度 */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .faq-section-title {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    text-align: center; /* 将标题居中 */
+  }
+  
+  .faq-container {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保容器占据全部可用宽度 */
+  }
+  
+  .faq-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E8F3F3;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%; /* 确保每个项目占据全部宽度 */
+  }
+  
+  .faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E8F3F3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .faq-question:hover {
+    background-color: #d0e9e9;
+  }
+  
+  .faq-question h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2D5F5D;
+    padding-right: 1rem; /* 为加号图标留出空间 */
+    flex: 1; /* 允许文本占据剩余空间 */
+  }
+  
+  .faq-toggle {
+    font-size: 1.5rem;
+    color: #2D5F5D;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; /* 防止图标被压缩 */
+  }
+  
+  .faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+  }
+  
+  .faq-answer {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    width: 100%; /* 确保答案部分占据全部宽度 */
+  }
+  
+  .faq-item.active .faq-answer {
+    padding: 1rem;
+    max-height: 1000px;
+  }
+  
+  .faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .faq-section {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  }
+</style>
+
+<!-- 添加FAQ所需的JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // FAQ 折叠功能
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+      const question = item.querySelector('.faq-question');
+      
+      question.addEventListener('click', () => {
+        // 关闭其他打开的FAQ
+        faqItems.forEach(otherItem => {
+          if (otherItem !== item && otherItem.classList.contains('active')) {
+            otherItem.classList.remove('active');
+          }
+        });
+        
+        // 切换当前FAQ状态
+        item.classList.toggle('active');
+      });
+    });
+  });
+</script>
