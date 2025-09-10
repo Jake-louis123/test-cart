@@ -1,0 +1,732 @@
+{%- doc -%}
+  Renders a sticky cart bar that appears when the main add-to-cart button scrolls out of view.
+  Contains variant selector and add-to-cart button synchronized with the main product form.
+{%- enddoc -%}
+
+{%- liquid
+  assign product = product | default: collections.all.products.first
+  if product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign current_variant = product.selected_or_first_available_variant
+  assign can_add_to_cart = current_variant.available
+
+  if current_variant == blank
+    assign can_add_to_cart = false
+  endif
+-%}
+
+<sticky-cart-bar
+  class="sticky-cart-bar"
+  data-product-id="{{ product.id }}"
+  data-product-url="{{ product.url }}"
+  data-section-id="{{ section.id }}"
+  data-main-atc-selector="{{ section.settings.main_atc_selector | default: 'form[action*=\'/cart/add\'] [type=\'submit\']' }}"
+  style="--sticky-cart-z-index: {{ section.settings.z_index | default: 1000 }};"
+>
+  <div class="sticky-cart-bar__container color-{{ section.settings.color_scheme }}">
+    <div class="sticky-cart-bar__content">
+      {% if section.settings.show_product_image and product.featured_media %}
+        <div class="sticky-cart-bar__image">
+          <img
+            src="{{ current_variant.featured_media.preview_image | default: product.featured_media.preview_image | image_url: width: 60 }}"
+            alt="{{ current_variant.featured_media.alt | default: product.featured_media.alt | default: product.title }}"
+            width="40"
+            height="40"
+            loading="lazy"
+          >
+        </div>
+      {% endif %}
+
+      <div class="sticky-cart-bar__product-info">
+        {% if section.settings.show_product_title %}
+          <h3 class="sticky-cart-bar__title">{{ product.title }}</h3>
+        {% endif %}
+        {% if section.settings.show_price %}
+          <div class="sticky-cart-bar__price">
+            <span class="price{% if current_variant.compare_at_price > current_variant.price %} price--sale{% endif %}">
+              {{ current_variant.price | money }}
+              {% if current_variant.compare_at_price > current_variant.price %}
+                <s class="price__compare">{{ current_variant.compare_at_price | money }}</s>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="sticky-cart-bar__form">
+        <product-form-component
+          class="sticky-cart-form"
+          data-product-id="{{ product.id }}"
+          data-quantity-default="1"
+        >
+          <form action="{{ routes.cart_add_url }}" method="post" enctype="multipart/form-data" class="form">
+            <input type="hidden" name="id" ref="variantId" value="{{ current_variant.id }}">
+            
+            <div class="sticky-cart-bar__controls">
+              {% unless product.has_only_default_variant %}
+                <div class="sticky-cart-bar__variant-picker">
+                  <variant-picker
+                    class="sticky-variant-picker"
+                    data-section-id="{{ section.id }}"
+                    data-product-id="{{ product.id }}"
+                    data-product-url="{{ product.url }}"
+                    data-sync-with-main="true"
+                    ref="stickyVariantPicker"
+                  >
+                    <div class="sticky-variant-picker__form">
+                      {% for product_option in product.options_with_values %}
+                        <div class="sticky-variant-option">
+                          <label class="sticky-variant-option__label" for="StickyOption-{{ section.id }}-{{ forloop.index0 }}">
+                            {{ product_option.name }}:
+                          </label>
+                          <select
+                            id="StickyOption-{{ section.id }}-{{ forloop.index0 }}"
+                            name="options[{{ product_option.name | escape }}]"
+                            class="sticky-variant-option__select"
+                          >
+                            {% for product_option_value in product_option.values %}
+                              <option
+                                value="{{ product_option_value | escape }}"
+                                data-input-id="{{ product_option.position }}-{{ forloop.index0 }}"
+                                data-option-value-id="{{ product_option_value.id }}"
+                                data-variant-id="{{ product_option_value.variant.id }}"
+                                {% if product_option_value.selected %}selected="selected"{% endif %}
+                                {% if product_option_value.available == false %}disabled{% endif %}
+                              >
+                                {{ product_option_value | escape }}
+                                {% if product_option_value.available == false %} - {{ 'content.unavailable' | t }}{% endif %}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      {% endfor %}
+                      
+                      <script type="application/json">
+                        {{ current_variant | json }}
+                      </script>
+                    </div>
+                  </variant-picker>
+                </div>
+              {% endunless %}
+
+              {% if section.settings.show_quantity %}
+                <div class="sticky-cart-bar__quantity">
+                  <label class="sticky-cart-bar__quantity-label" for="StickyQuantity-{{ section.id }}">
+                    {{ 'products.product.quantity.label' | t }}
+                  </label>
+                  <quantity-input class="sticky-quantity-input">
+                    <button
+                      class="quantity__button no-js-hidden"
+                      name="minus"
+                      type="button"
+                      aria-label="{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" class="icon icon-minus" fill="none" viewBox="0 0 10 2">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 110 1H1A.5.5 0 01.5 1z" fill="currentColor">
+                      </svg>
+                    </button>
+                    <input
+                      class="quantity__input"
+                      type="number"
+                      name="quantity"
+                      id="StickyQuantity-{{ section.id }}"
+                      min="1"
+                      value="1"
+                      form=""
+                    >
+                    <button
+                      class="quantity__button no-js-hidden"
+                      name="plus"
+                      type="button"
+                      aria-label="{{ 'products.product.quantity.increase' | t: product: product.title | escape }}"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" class="icon icon-plus" fill="none" viewBox="0 0 10 10">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M1 4.51a.5.5 0 000 1h3.5l.01 3.5a.5.5 0 001-.01V5.5l3.5-.01a.5.5 0 00-.01-1H5.5L5.49.99a.5.5 0 00-1 .01v3.5l-3.5.01H1z" fill="currentColor">
+                      </svg>
+                    </button>
+                  </quantity-input>
+                </div>
+              {% endif %}
+
+              <div class="sticky-cart-bar__add-to-cart">
+                {% render 'add-to-cart-button',
+                  id: 'StickyAddToCart-' | append: section.id,
+                  class: 'sticky-add-to-cart-button',
+                  can_add_to_cart: can_add_to_cart,
+                  product: product,
+                  add_to_cart_text: section.settings.button_text
+                %}
+              </div>
+            </div>
+
+            <div
+              class="sticky-cart-bar__live-region visually-hidden"
+              aria-live="polite"
+              ref="liveRegion"
+            ></div>
+          </form>
+        </product-form-component>
+      </div>
+    </div>
+  </div>
+</sticky-cart-bar>
+
+{% stylesheet %}
+  .sticky-cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--sticky-cart-z-index);
+    transform: translateY(100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+  }
+
+  .sticky-cart-bar.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sticky-cart-bar__container {
+    background-color: rgb(var(--color-background));
+    border-top: 1px solid rgba(var(--color-foreground-rgb) / 0.2);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding: var(--padding-sm) 0;
+  }
+
+  .sticky-cart-bar__content {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 var(--padding-sm);
+  }
+
+  .sticky-cart-bar__image {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .sticky-cart-bar__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sticky-cart-bar__product-info {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .sticky-cart-bar__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0;
+    color: rgb(var(--color-foreground));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sticky-cart-bar__price {
+    font-size: 0.75rem;
+    margin-top: 2px;
+  }
+
+  .sticky-cart-bar__form {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticky-cart-bar__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    flex-wrap: nowrap;
+  }
+
+  .sticky-cart-bar__variant-picker {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticky-variant-picker__form {
+    display: flex;
+    gap: var(--gap-2xs);
+    flex-wrap: nowrap;
+  }
+
+  .sticky-variant-option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticky-variant-option__label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    color: rgb(var(--color-foreground));
+    flex-shrink: 0;
+  }
+
+  .sticky-variant-option__select {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 8px;
+    border: 1px solid rgba(var(--color-foreground-rgb) / 0.2);
+    border-radius: var(--border-radius);
+    background-color: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+    font-size: 0.75rem;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .sticky-variant-option__select:focus {
+    outline: 2px solid rgb(var(--color-foreground));
+    outline-offset: 1px;
+  }
+
+  .sticky-cart-bar__quantity {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .sticky-cart-bar__quantity-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    color: rgb(var(--color-foreground));
+  }
+
+  .sticky-quantity-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(var(--color-foreground-rgb) / 0.2);
+    border-radius: var(--border-radius);
+    background-color: rgb(var(--color-background));
+  }
+
+  .sticky-quantity-input .quantity__button {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgb(var(--color-foreground));
+    padding: 0;
+  }
+
+  .sticky-quantity-input .quantity__button:hover {
+    background-color: rgba(var(--color-foreground-rgb) / 0.05);
+  }
+
+  .sticky-quantity-input .quantity__input {
+    width: 40px;
+    height: 28px;
+    text-align: center;
+    border: none;
+    background: none;
+    color: rgb(var(--color-foreground));
+    font-size: 0.75rem;
+    padding: 0;
+    -moz-appearance: textfield;
+  }
+
+  .sticky-quantity-input .quantity__input::-webkit-outer-spin-button,
+  .sticky-quantity-input .quantity__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .sticky-quantity-input .quantity__input:focus {
+    outline: none;
+  }
+
+  .sticky-quantity-input .icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .sticky-cart-bar__add-to-cart {
+    flex-shrink: 0;
+  }
+
+  .sticky-add-to-cart-button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 120px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* Mobile responsive adjustments */
+  @media screen and (max-width: 749px) {
+    .sticky-cart-bar__content {
+      padding: 0 var(--padding-xs);
+      gap: var(--gap-2xs);
+    }
+
+    .sticky-cart-bar__product-info {
+      display: none; /* Hide on mobile to save space */
+    }
+
+    .sticky-cart-bar__image {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sticky-variant-option__label {
+      display: none; /* Hide labels on mobile */
+    }
+
+    .sticky-cart-bar__quantity-label {
+      display: none; /* Hide quantity label on mobile */
+    }
+
+    .sticky-quantity-input {
+      min-width: 90px;
+    }
+
+    .sticky-add-to-cart-button {
+      min-width: 100px;
+      padding: 8px 12px;
+      font-size: 0.8125rem;
+    }
+
+    .sticky-variant-option__select {
+      font-size: 0.6875rem;
+      padding: 3px 6px;
+    }
+  }
+
+  /* Tablet responsive adjustments */
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .sticky-cart-bar__title {
+      font-size: 0.8125rem;
+    }
+
+    .sticky-variant-option__label {
+      font-size: 0.6875rem;
+    }
+
+    .sticky-cart-bar__quantity-label {
+      font-size: 0.6875rem;
+    }
+  }
+
+  /* Desktop optimizations */
+  @media screen and (min-width: 990px) {
+    .sticky-cart-bar__controls {
+      gap: var(--gap-sm);
+    }
+
+    .sticky-variant-picker__form {
+      gap: var(--gap-xs);
+    }
+  }
+
+  /* High resolution displays */
+  @media screen and (min-width: 1200px) {
+    .sticky-cart-bar__content {
+      max-width: 1200px;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+class StickyCartBar extends HTMLElement {
+  constructor() {
+    super();
+    this.mainAtcSelector = this.dataset.mainAtcSelector;
+    this.observer = null;
+    this.mainVariantPicker = null;
+    this.stickyVariantPicker = null;
+  }
+
+  connectedCallback() {
+    this.setupIntersectionObserver();
+    this.setupVariantSync();
+    this.bindEvents();
+  }
+
+  disconnectedCallback() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+
+  setupIntersectionObserver() {
+    const mainAtcButton = document.querySelector(this.mainAtcSelector);
+    if (!mainAtcButton) return;
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this.hideSticky();
+        } else {
+          this.showSticky();
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0
+    });
+
+    this.observer.observe(mainAtcButton);
+  }
+
+  setupVariantSync() {
+    // Find main and sticky variant pickers
+    this.mainVariantPicker = document.querySelector('variant-picker[ref="mainVariantPicker"]');
+    this.stickyVariantPicker = this.querySelector('variant-picker[ref="stickyVariantPicker"]');
+
+    if (!this.mainVariantPicker || !this.stickyVariantPicker) return;
+
+    // Sync from main to sticky
+    this.mainVariantPicker.addEventListener('change', (event) => {
+      this.syncVariantSelection(event.target, 'main-to-sticky');
+    });
+
+    // Sync from sticky to main
+    this.stickyVariantPicker.addEventListener('change', (event) => {
+      this.syncVariantSelection(event.target, 'sticky-to-main');
+    });
+  }
+
+  syncVariantSelection(sourceElement, direction) {
+    if (sourceElement.tagName === 'INPUT' && sourceElement.type === 'radio') {
+      // Handle button-style variant pickers
+      const optionValueId = sourceElement.dataset.optionValueId;
+      const targetPicker = direction === 'main-to-sticky' ? this.stickyVariantPicker : this.mainVariantPicker;
+      const targetInput = targetPicker?.querySelector(`[data-option-value-id="${optionValueId}"]`);
+      
+      if (targetInput && targetInput !== sourceElement) {
+        targetInput.checked = true;
+        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    } else if (sourceElement.tagName === 'SELECT') {
+      // Handle dropdown-style variant pickers
+      const optionName = sourceElement.name.replace('options[', '').replace(']', '');
+      const selectedValue = sourceElement.value;
+      const targetPicker = direction === 'main-to-sticky' ? this.stickyVariantPicker : this.mainVariantPicker;
+      const targetSelect = targetPicker?.querySelector(`[name*="${optionName}"]`);
+      
+      if (targetSelect && targetSelect !== sourceElement) {
+        targetSelect.value = selectedValue;
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  }
+
+  bindEvents() {
+    // Listen for variant updates using the theme's existing event system
+    const productSection = document.querySelector(`[data-product-id="${this.dataset.productId}"]`);
+    if (productSection) {
+      productSection.addEventListener('theme:variant:update', (event) => {
+        this.handleVariantUpdate(event);
+      });
+      
+      productSection.addEventListener('theme:variant:selected', (event) => {
+        this.handleVariantSelected(event);
+      });
+    }
+  }
+
+  handleVariantUpdate(event) {
+    if (event.detail.data?.productId !== this.dataset.productId) return;
+    
+    const variantResource = event.detail.resource;
+    this.updateVariantId(variantResource?.id);
+    this.updateButtonState(variantResource);
+  }
+
+  handleVariantSelected(event) {
+    // Handle immediate variant selection before the update event
+    this.updateSelectedVariant(event.detail.id);
+  }
+
+  updateVariantId(variantId) {
+    const variantInput = this.querySelector('[ref="variantId"]');
+    if (variantInput && variantId) {
+      variantInput.value = variantId;
+    }
+  }
+
+  updateButtonState(variant) {
+    const addToCartButton = this.querySelector('.sticky-add-to-cart-button');
+    if (!addToCartButton) return;
+
+    if (!variant || !variant.available) {
+      addToCartButton.setAttribute('disabled', 'true');
+    } else {
+      addToCartButton.removeAttribute('disabled');
+    }
+  }
+
+  updateSelectedVariant(optionValueId) {
+    if (!this.stickyVariantPicker || !optionValueId) return;
+    
+    // Update the sticky picker to match the main picker selection
+    const targetElement = this.stickyVariantPicker.querySelector(`[data-option-value-id="${optionValueId}"]`);
+    if (targetElement) {
+      if (targetElement.tagName === 'INPUT') {
+        targetElement.checked = true;
+      } else if (targetElement.tagName === 'OPTION') {
+        targetElement.selected = true;
+        targetElement.parentElement.value = targetElement.value;
+      }
+    }
+  }
+
+  showSticky() {
+    this.classList.add('is-visible');
+  }
+
+  hideSticky() {
+    this.classList.remove('is-visible');
+  }
+}
+
+if (!customElements.get('sticky-cart-bar')) {
+  customElements.define('sticky-cart-bar', StickyCartBar);
+}
+
+// Quantity input component for sticky bar
+class QuantityInput extends HTMLElement {
+  constructor() {
+    super();
+    this.input = this.querySelector('input[type="number"]');
+    this.changeEvent = new Event('change', { bubbles: true });
+    this.querySelectorAll('button').forEach((button) =>
+      button.addEventListener('click', this.onButtonClick.bind(this))
+    );
+  }
+
+  onButtonClick(event) {
+    event.preventDefault();
+    const previousValue = this.input.value;
+
+    if (event.target.name === 'plus') {
+      this.input.stepUp();
+    } else {
+      this.input.stepDown();
+    }
+
+    if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
+  }
+}
+
+if (!customElements.get('quantity-input')) {
+  customElements.define('quantity-input', QuantityInput);
+}
+</script>
+
+{% schema %}
+{
+  "name": "Sticky Cart Bar",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "General Settings"
+    },
+    {
+      "type": "text",
+      "id": "main_atc_selector",
+      "label": "Main Add-to-Cart Button Selector",
+      "default": "form[action*='/cart/add'] [type='submit']",
+      "info": "CSS selector for the main add-to-cart button to detect when it's out of view"
+    },
+    {
+      "type": "range",
+      "id": "z_index",
+      "label": "Z-index",
+      "min": 100,
+      "max": 9999,
+      "step": 100,
+      "default": 1000,
+      "info": "Controls the stacking order of the sticky bar"
+    },
+    {
+      "type": "header",
+      "content": "Content Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_image",
+      "label": "Show Product Image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_title",
+      "label": "Show Product Title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show Price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quantity",
+      "label": "Show Quantity Selector",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Add to Cart Button Text",
+      "default": "Add to cart"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color Scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky Cart Bar"
+    }
+  ]
+}
+{% endschema %}
